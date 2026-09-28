@@ -48,3 +48,36 @@
 .animate-slide-up {
   animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* Print specific optimizations for wedding cards */
+@media print {
+  body {
+    background-color: white !important;
+    color: black !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  header,
+  nav,
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .print-page-break {
+    page-break-after: always;
+    break-after: page;
+  }
+
+  @page {
+    margin: 0;
+    size: auto;
+  }
+}
+

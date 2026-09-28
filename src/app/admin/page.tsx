@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import {
@@ -17,6 +18,7 @@ import {
   ExternalLink,
   Search,
   Filter,
+  Printer,
 } from 'lucide-react';
 import { WeddingPhoto, PhotoStatus } from '@/types/wedding';
 import { getPhotos, updatePhotoStatus, deletePhoto } from '@/lib/supabase';
@@ -188,6 +190,14 @@ export default function AdminPage() {
                 </>
               )}
             </button>
+
+            <Link
+              href="/print"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white border border-[#D4AF37] text-stone-900 font-semibold text-xs sm:text-sm hover:bg-[#F3E5AB]/30 transition-colors shadow-xs"
+            >
+              <Printer className="w-3.5 h-3.5 text-[#B8860B]" />
+              <span>In Bảng QR Bàn A6</span>
+            </Link>
 
             <a
               href="/live"

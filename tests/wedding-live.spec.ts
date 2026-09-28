@@ -194,4 +194,50 @@ test.describe('WeddingLive E2E Test Suite', () => {
     }
   });
 
+
+  test('5. Kiểm tra Công Cụ Tạo Thiệp Cưới & Bảng QR Để Bàn In Ấn (/print)', async ({ page }) => {
+    console.log('\n--- Bắt đầu Test 5: Tạo Thiệp Cưới & Bảng QR Bàn Tiệc (/print) ---');
+
+    // 1. Truy cập trang /print
+    const response = await page.goto('/print');
+    expect(response?.status()).toBe(200);
+    console.log('✓ Trang /print tải thành công HTTP 200 OK');
+
+    // 2. Kiểm tra tiêu đề chính
+    await expect(page.locator('h1:has-text("Tạo Thiệp Cưới & Bảng QR Bàn Tiệc")')).toBeVisible();
+    console.log('✓ Tiêu đề công cụ in ấn hiển thị chính xác');
+
+    // 3. Kiểm tra bản xem trước card A6
+    await expect(page.getByText('BẢNG CHIA SẺ KHOẢNH KHẮC').first()).toBeVisible();
+    await expect(page.getByText('Tuấn Kiệt & Minh Anh').first()).toBeVisible();
+    console.log('✓ Bản xem trước bảng để bàn A6 hiển thị tên dâu rể');
+
+    // 4. Kiểm tra đổi theme (chọn Đỏ Hỷ Truyền Thống)
+    const redThemeBtn = page.locator('button:has-text("Đỏ Hỷ Truyền Thống")');
+    await redThemeBtn.click();
+    await expect(page.getByText('囍').first()).toBeVisible();
+    console.log('✓ Chuyển sang phong cách Đỏ Hỷ Truyền Thống thành công (hiển thị chữ Song Hỷ 囍)');
+
+    // 5. Kiểm tra đổi loại thiệp (Thiệp Mời Cưới Trọng Thể)
+    const invitationBtn = page.locator('button:has-text("Thiệp Mời Cưới Trọng Thể")');
+    await invitationBtn.click();
+    await expect(page.getByText('THIỆP MỜI TRỌNG THỂ').first()).toBeVisible();
+    await expect(page.getByText('Trân Trọng Kính Mời').first()).toBeVisible();
+    console.log('✓ Chuyển sang chế độ Thiệp Mời Cưới Trọng Thể thành công');
+
+    // 6. Kiểm tra tính năng In hàng loạt nhiều bàn
+    const tableStandBtn = page.locator('button:has-text("Bảng QR Để Bàn A6")');
+    await tableStandBtn.click();
+
+    const batchCheckbox = page.locator('input[type="checkbox"]').first();
+    await batchCheckbox.check();
+    await expect(page.getByText('In từ:').first()).toBeVisible();
+    console.log('✓ Kích hoạt chế độ in hàng loạt nhiều số bàn tiệc A6 thành công');
+
+    // 7. Kiểm tra nút in sẵn sàng
+    const printBtn = page.locator('button:has-text("In Hàng Loạt")').or(page.locator('button:has-text("In Ngay")'));
+    await expect(printBtn.first()).toBeVisible();
+    console.log('✓ Nút in ấn hoạt động chuẩn bị gửi máy in/xuất PDF!');
+  });
+
 });

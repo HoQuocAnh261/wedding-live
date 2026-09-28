@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { ShoppingBag, ExternalLink, Sparkles, CheckCircle2, Star } from 'lucide-react';
+import Link from 'next/link';
+import { ShoppingBag, ExternalLink, Sparkles, CheckCircle2, Star, Printer } from 'lucide-react';
 
 export function ShopeeAffiliateCard() {
   const shopeeItems = [
@@ -47,9 +48,18 @@ export function ShopeeAffiliateCard() {
           </div>
         </div>
 
-        <div className="flex items-center gap-1 text-xs text-amber-700 bg-amber-100/60 px-2.5 py-1 rounded-full self-start sm:self-auto">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Tăng 300% lượng ảnh chụp</span>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <Link
+            href="/print"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-900 text-white hover:bg-stone-800 text-xs font-semibold shadow-xs transition-colors"
+          >
+            <Printer className="w-3.5 h-3.5 text-amber-400" />
+            <span>Thiết Kế & In Bảng A6</span>
+          </Link>
+          <div className="flex items-center gap-1 text-xs text-amber-700 bg-amber-100/60 px-2.5 py-1 rounded-full">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Tăng 300% lượng ảnh</span>
+          </div>
         </div>
       </div>
 

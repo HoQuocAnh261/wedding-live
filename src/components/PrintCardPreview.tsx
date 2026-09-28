@@ -5,8 +5,16 @@ import { QRCodeSVG } from 'qrcode.react';
 import { Heart, Sparkles, Gift, Camera, Mail, Building, MapPin } from 'lucide-react';
 import { DEFAULT_BANK_INFO } from '@/lib/mock-data';
 import { WeddingGuest } from '@/types/guest';
+import {
+  BaroqueCorner,
+  FloralSpray,
+  DoubleHappinessMedallion,
+  RealisticWaxSeal,
+  ArchitecturalDateBadge,
+  CalligraphyAmpersand,
+} from '@/components/WeddingOrnaments';
 
-export type CardTheme = 'gold' | 'red' | 'rose' | 'greenery' | 'noir';
+export type CardTheme = 'gold' | 'red' | 'rose' | 'greenery' | 'noir' | 'starlit' | 'golden' | 'amber' | 'poised';
 export type CardType = 'table_stand' | 'invitation' | 'envelope';
 
 export interface CardData {
@@ -50,146 +58,244 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
     showTableNumber,
     customNote,
     cardType,
-    theme,
+    theme: rawTheme,
     guest,
   } = data;
 
   const bankInfo = DEFAULT_BANK_INFO;
   const vietQrUrl = `https://img.vietqr.io/image/${bankInfo.bankId}-${bankInfo.accountNo}-compact.png?amount=500000&addInfo=MungCuoi&accountName=${encodeURIComponent(bankInfo.accountName)}`;
 
+  // Normalize theme keys (mapping legacy themes to their luxury counterparts)
+  const normalizedTheme: 'starlit' | 'golden' | 'amber' | 'poised' | 'gold' =
+    rawTheme === 'red' || rawTheme === 'starlit'
+      ? 'starlit'
+      : rawTheme === 'rose' || rawTheme === 'golden'
+      ? 'golden'
+      : rawTheme === 'noir' || rawTheme === 'amber'
+      ? 'amber'
+      : rawTheme === 'greenery' || rawTheme === 'poised'
+      ? 'poised'
+      : 'gold';
+
   // Effective table number from guest if available
   const effectiveTable = guest?.tableNumber || tableNumber;
 
-  // Theme styling definitions
-  const themeStyles = {
+  // Luxury Theme Visual Configurations
+  const themeConfig = {
+    // 1. Starlit Garden (Đỏ Velvet Bordeaux & Vàng Kim Hoàng Gia)
+    starlit: {
+      bg: 'bg-gradient-to-br from-[#4A0A14] via-[#6B1120] to-[#3B070F]',
+      outerBorder: 'border-[#E6C687]',
+      innerBorder: 'border-[#E6C687]/60',
+      cornerColor: '#E6C687',
+      floralVariant: 'crimson' as const,
+      waxVariant: 'gold' as const,
+      waxInitials: '囍',
+      titleColor: 'text-[#FCEEB5]',
+      bodyColor: 'text-[#FFF8E7]',
+      subColor: 'text-[#F3D798]/80',
+      badgeBg: 'bg-gradient-to-r from-[#D4AF37] to-[#B8860B]',
+      badgeText: 'text-[#3B070F]',
+      badgeBorder: 'border-[#FFF4D0]',
+      cardBg: 'bg-[#580D18]/90 backdrop-blur-md',
+      qrFg: '#000000',
+      accentColor: 'text-[#FCEEB5]',
+      envelopeFlap: 'bg-[#580D18]',
+      isDark: true,
+    },
+    // 2. Golden Soirée (Hồng Phấn Đào & Chữ Hỷ 囍 Thư Pháp)
+    golden: {
+      bg: 'bg-gradient-to-br from-[#FFFDF9] via-[#FFF7F2] to-[#FFF0E6]',
+      outerBorder: 'border-[#FDBA74]',
+      innerBorder: 'border-[#FB923C]/50',
+      cornerColor: '#E07A5F',
+      floralVariant: 'peach' as const,
+      waxVariant: 'rose' as const,
+      waxInitials: '囍',
+      titleColor: 'text-[#C2410C]',
+      bodyColor: 'text-[#431407]',
+      subColor: 'text-[#9A3412]/80',
+      badgeBg: 'bg-gradient-to-r from-[#F97316] to-[#EA580C]',
+      badgeText: 'text-white',
+      badgeBorder: 'border-[#FFEDD5]',
+      cardBg: 'bg-white/85 backdrop-blur-sm',
+      qrFg: '#7C2D12',
+      accentColor: 'text-[#EA580C]',
+      envelopeFlap: 'bg-[#FFE4D6]',
+      isDark: false,
+    },
+    // 3. Amber Noir (Cổ Điển Vintage Espresso Châu Âu)
+    amber: {
+      bg: 'bg-gradient-to-br from-[#1C1816] via-[#29221D] to-[#120F0D]',
+      outerBorder: 'border-[#CBB282]',
+      innerBorder: 'border-[#CBB282]/50',
+      cornerColor: '#CBB282',
+      floralVariant: 'vintage' as const,
+      waxVariant: 'amber' as const,
+      waxInitials: '囍',
+      titleColor: 'text-[#EFE2CE]',
+      bodyColor: 'text-[#F7EFE5]',
+      subColor: 'text-[#D0BC9E]/80',
+      badgeBg: 'bg-gradient-to-r from-[#CBB282] to-[#9E8254]',
+      badgeText: 'text-[#1C1816]',
+      badgeBorder: 'border-[#F7EFE5]',
+      cardBg: 'bg-[#26201B]/90 backdrop-blur-md',
+      qrFg: '#000000',
+      accentColor: 'text-[#EFE2CE]',
+      envelopeFlap: 'bg-[#26201B]',
+      isDark: true,
+    },
+    // 4. Poised Romance (Xanh Đêm Hoàng Gia & Hoa Dạ Thảo)
+    poised: {
+      bg: 'bg-gradient-to-br from-[#0B1A2A] via-[#10273E] to-[#08121D]',
+      outerBorder: 'border-[#93C5FD]',
+      innerBorder: 'border-[#60A5FA]/40',
+      cornerColor: '#93C5FD',
+      floralVariant: 'wildflower' as const,
+      waxVariant: 'gold' as const,
+      waxInitials: '囍',
+      titleColor: 'text-[#E0F2FE]',
+      bodyColor: 'text-white',
+      subColor: 'text-[#BAE6FD]/80',
+      badgeBg: 'bg-gradient-to-r from-[#38BDF8] to-[#0284C7]',
+      badgeText: 'text-white',
+      badgeBorder: 'border-[#E0F2FE]',
+      cardBg: 'bg-[#0E2235]/90 backdrop-blur-md',
+      qrFg: '#000000',
+      accentColor: 'text-[#7DD3FC]',
+      envelopeFlap: 'bg-[#0E2235]',
+      isDark: true,
+    },
+    // 5. Royal Ivory Gold (Kem Ngọc Trai & Viền Vàng Dập Nổi)
     gold: {
-      bg: 'bg-[#FAF8F5]',
-      border: 'border-[#D4AF37]',
-      innerBorder: 'border-[#E8DFC8]',
-      titleColor: 'text-[#B8860B]',
-      bodyColor: 'text-stone-800',
-      subColor: 'text-stone-500',
-      badgeBg: 'bg-[#D4AF37]',
-      badgeText: 'text-stone-950',
+      bg: 'bg-gradient-to-br from-[#FAF8F5] via-[#FFFDF9] to-[#F5EFEB]',
+      outerBorder: 'border-[#D4AF37]',
+      innerBorder: 'border-[#D4AF37]/50',
+      cornerColor: '#D4AF37',
+      floralVariant: 'peach' as const,
+      waxVariant: 'gold' as const,
+      waxInitials: '囍',
+      titleColor: 'text-[#854D0E]',
+      bodyColor: 'text-[#292524]',
+      subColor: 'text-[#78716C]',
+      badgeBg: 'bg-gradient-to-r from-[#D4AF37] to-[#B8860B]',
+      badgeText: 'text-[#292524]',
+      badgeBorder: 'border-[#FEF3C7]',
+      cardBg: 'bg-white/85 backdrop-blur-sm',
       qrFg: '#1C1917',
-      goldAccent: 'text-[#D4AF37]',
+      accentColor: 'text-[#B8860B]',
+      envelopeFlap: 'bg-[#F5EFEB]',
+      isDark: false,
     },
-    red: {
-      bg: 'bg-[#8F1414]',
-      border: 'border-[#FCD34D]',
-      innerBorder: 'border-[#F59E0B]/60',
-      titleColor: 'text-[#FCD34D]',
-      bodyColor: 'text-amber-50',
-      subColor: 'text-amber-200/80',
-      badgeBg: 'bg-[#FCD34D]',
-      badgeText: 'text-[#7F1D1D]',
-      qrFg: '#000000',
-      goldAccent: 'text-[#FCD34D]',
-    },
-    rose: {
-      bg: 'bg-[#FFF5F7]',
-      border: 'border-[#FDA4AF]',
-      innerBorder: 'border-[#FECDD3]',
-      titleColor: 'text-[#BE185D]',
-      bodyColor: 'text-stone-800',
-      subColor: 'text-stone-500',
-      badgeBg: 'bg-[#BE185D]',
-      badgeText: 'text-white',
-      qrFg: '#881337',
-      goldAccent: 'text-[#F43F5E]',
-    },
-    greenery: {
-      bg: 'bg-[#FAFCFA]',
-      border: 'border-[#86EFAC]',
-      innerBorder: 'border-[#BBF7D0]',
-      titleColor: 'text-[#166534]',
-      bodyColor: 'text-stone-800',
-      subColor: 'text-stone-500',
-      badgeBg: 'bg-[#166534]',
-      badgeText: 'text-white',
-      qrFg: '#14532D',
-      goldAccent: 'text-[#16A34A]',
-    },
-    noir: {
-      bg: 'bg-[#1C1917]',
-      border: 'border-[#D4AF37]',
-      innerBorder: 'border-stone-700',
-      titleColor: 'text-[#E2C364]',
-      bodyColor: 'text-stone-100',
-      subColor: 'text-stone-400',
-      badgeBg: 'bg-[#D4AF37]',
-      badgeText: 'text-stone-950',
-      qrFg: '#000000',
-      goldAccent: 'text-[#D4AF37]',
-    },
-  }[theme];
+  }[normalizedTheme];
 
   // =========================================================================
-  // VIEW 1: ENVELOPE (Bao thư thiệp cưới có tên khách và đơn vị)
+  // VIEW 1: ENVELOPE (Bao thư thiệp cưới có tên khách, cơ quan, con dấu sáp 3D)
   // =========================================================================
   if (cardType === 'envelope') {
     return (
       <div
-        className={`relative mx-auto rounded-3xl overflow-hidden shadow-2xl transition-all duration-300 print:shadow-none print:rounded-none select-none flex flex-col justify-between ${themeStyles.bg} ${
+        className={`relative mx-auto rounded-3xl overflow-hidden shadow-2xl transition-all duration-300 print:shadow-none print:rounded-none select-none flex flex-col justify-between ${themeConfig.bg} ${
           isPrintVersion
-            ? 'w-[160mm] h-[115mm] p-[6mm] print:m-0 print:p-[6mm]'
-            : 'w-[420px] sm:w-[460px] h-[300px] sm:h-[330px] p-5 sm:p-6 border-4 sm:border-6 ' + themeStyles.border
+            ? 'w-[160mm] h-[115mm] p-[6mm] print:m-0 print:p-[5mm]'
+            : 'w-[440px] sm:w-[480px] h-[310px] sm:h-[340px] p-6 border-4 ' + themeConfig.outerBorder
         }`}
         style={{ boxSizing: 'border-box' }}
       >
-        {/* Inner decorative border */}
-        <div className={`absolute inset-2 sm:inset-3 border-2 border-dashed rounded-2xl pointer-events-none ${themeStyles.innerBorder}`} />
+        {/* Ornate Gold Filigree Corners */}
+        <BaroqueCorner position="top-left" color={themeConfig.cornerColor} className="absolute top-2 left-2 w-12 h-12" />
+        <BaroqueCorner position="top-right" color={themeConfig.cornerColor} className="absolute top-2 right-2 w-12 h-12" />
+        <BaroqueCorner position="bottom-left" color={themeConfig.cornerColor} className="absolute bottom-2 left-2 w-12 h-12" />
+        <BaroqueCorner position="bottom-right" color={themeConfig.cornerColor} className="absolute bottom-2 right-2 w-12 h-12" />
 
-        {/* Envelope Top Bar: Monogram & Date */}
-        <div className="flex items-center justify-between relative z-10 pt-1">
-          <div className="flex items-center gap-2">
-            <div className={`w-8 h-8 rounded-full border flex items-center justify-center font-serif font-bold text-xs ${themeStyles.border} ${themeStyles.titleColor}`}>
-              {groomName.charAt(0)}&{brideName.charAt(0)}
+        {/* Dual Hairline Inner Gold Border */}
+        <div
+          className={`absolute inset-3 border border-double border-2 rounded-2xl pointer-events-none ${themeConfig.innerBorder}`}
+        />
+
+        {/* Watercolor Floral Sprays on Corners */}
+        <FloralSpray
+          variant={themeConfig.floralVariant}
+          position="bottom-left"
+          className="absolute -bottom-4 -left-4 w-28 h-28 opacity-80 pointer-events-none"
+        />
+        <FloralSpray
+          variant={themeConfig.floralVariant}
+          position="top-right"
+          className="absolute -top-4 -right-4 w-24 h-24 opacity-75 pointer-events-none"
+        />
+
+        {/* Top Header: Couple Monogram Crest & Postage Stamp */}
+        <div className="flex items-center justify-between relative z-10 pt-1 px-3">
+          {/* Monogram Crest */}
+          <div className="flex items-center gap-2.5">
+            <div
+              className={`w-9 h-9 rounded-full border-2 flex items-center justify-center font-serif font-black text-xs shadow-md ${themeConfig.outerBorder} ${themeConfig.titleColor} bg-white/20 backdrop-blur-xs`}
+            >
+              {groomName.charAt(0)}&amp;{brideName.charAt(0)}
             </div>
             <div>
-              <span className={`font-serif font-bold text-xs sm:text-sm block ${themeStyles.bodyColor}`}>
-                {groomName} & {brideName}
+              <span className={`font-serif font-bold text-sm tracking-wide block ${themeConfig.bodyColor}`}>
+                {groomName} &amp; {brideName}
               </span>
-              <span className={`text-[10px] block font-serif italic ${themeStyles.subColor}`}>
-                {weddingDate}
+              <span className={`text-[10px] block font-serif italic ${themeConfig.subColor}`}>
+                Lễ Thành Hôn • {weddingDate}
               </span>
             </div>
           </div>
 
-          <div className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${themeStyles.border} ${themeStyles.titleColor}`}>
-            Hỷ Sự
+          {/* Vintage Postage Stamp / Seal Badge */}
+          <div className="flex items-center gap-2">
+            <div
+              className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border shadow-xs ${themeConfig.outerBorder} ${themeConfig.titleColor} bg-white/10 backdrop-blur-xs flex items-center gap-1`}
+            >
+              <Sparkles className="w-2.5 h-2.5" />
+              <span>Hỷ Sự</span>
+            </div>
           </div>
         </div>
 
         {/* Envelope Center: Personalized Guest Recipient */}
-        <div className="my-auto py-3 px-4 relative z-10 text-center">
-          <span className={`text-[10px] sm:text-xs uppercase font-semibold tracking-widest block mb-1 ${themeStyles.subColor}`}>
-            Kính gửi
-          </span>
+        <div className="my-auto py-2 px-6 relative z-10 text-center">
+          <div className="inline-flex items-center gap-2 mb-1.5 opacity-90">
+            <div className={`h-[1px] w-6 bg-current ${themeConfig.accentColor}`} />
+            <span
+              className={`text-[10px] sm:text-xs uppercase font-cinzel font-semibold tracking-[0.25em] ${themeConfig.subColor}`}
+            >
+              Kính gửi
+            </span>
+            <div className={`h-[1px] w-6 bg-current ${themeConfig.accentColor}`} />
+          </div>
 
-          <h3 className={`font-serif text-2xl sm:text-3xl font-extrabold tracking-wide leading-tight ${themeStyles.titleColor}`}>
+          {/* Guest Name in Flowing Romantic Script or Luxury Serif */}
+          <h3
+            className={`font-serif text-2xl sm:text-3xl font-extrabold tracking-wide leading-tight drop-shadow-xs ${themeConfig.titleColor}`}
+          >
             {guest ? `${guest.salutation} ${guest.name}` : 'Quý Khách & Gia Đình'}
           </h3>
 
+          {/* Plus One Companion */}
           {guest?.plusOne && (
-            <p className={`text-xs sm:text-sm font-serif italic mt-0.5 ${themeStyles.bodyColor}`}>
+            <p className={`text-xs sm:text-sm font-serif italic mt-1 ${themeConfig.bodyColor}`}>
               {guest.plusOne}
             </p>
           )}
 
-          {/* Company / Workplace & City label */}
+          {/* Company / Workplace & City Tag Pill */}
           {(guest?.company || guest?.address) && (
-            <div className="mt-2.5 inline-flex items-center gap-2 text-[10px] sm:text-[11px] px-3 py-1 rounded-full bg-white/70 border border-stone-200/80 text-stone-700">
+            <div className="mt-2.5 inline-flex items-center gap-2 text-[10px] sm:text-[11px] px-3.5 py-1 rounded-full bg-white/30 backdrop-blur-md border border-white/40 shadow-xs">
               {guest.company && (
-                <span className="flex items-center gap-1 font-medium">
-                  <Building className="w-3 h-3 text-[#B8860B]" />
+                <span className={`flex items-center gap-1 font-semibold ${themeConfig.bodyColor}`}>
+                  <Building className="w-3 h-3 text-[#E6C687]" />
                   <span>{guest.company}</span>
                 </span>
               )}
-              {guest.company && guest.address && <span>•</span>}
+              {guest.company && guest.address && (
+                <span className={`opacity-60 ${themeConfig.bodyColor}`}>•</span>
+              )}
               {guest.address && (
-                <span className="flex items-center gap-1 text-stone-500">
-                  <MapPin className="w-3 h-3 text-rose-500" />
+                <span className={`flex items-center gap-1 opacity-90 ${themeConfig.bodyColor}`}>
+                  <MapPin className="w-3 h-3 text-rose-400" />
                   <span>{guest.address}</span>
                 </span>
               )}
@@ -197,13 +303,18 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
           )}
         </div>
 
-        {/* Envelope Bottom Details */}
-        <div className="flex items-center justify-between text-[10px] relative z-10 pb-1 border-t border-dashed border-stone-200/60 pt-2">
-          <span className={`italic font-serif ${themeStyles.subColor}`}>
+        {/* Envelope Bottom Details & Table Number */}
+        <div
+          className={`flex items-center justify-between text-[10px] relative z-10 pb-1 border-t border-dashed px-3 pt-2 ${themeConfig.innerBorder}`}
+        >
+          <span className={`italic font-serif ${themeConfig.subColor} truncate max-w-[260px]`}>
             {venueName} {hallName ? `• ${hallName}` : ''}
           </span>
+
           {effectiveTable && (
-            <span className={`font-bold px-2 py-0.5 rounded ${themeStyles.badgeBg} ${themeStyles.badgeText}`}>
+            <span
+              className={`font-bold px-3 py-0.5 rounded-full shadow-sm border text-[10px] tracking-wider uppercase font-serif ${themeConfig.badgeBg} ${themeConfig.badgeText} ${themeConfig.badgeBorder}`}
+            >
               {effectiveTable}
             </span>
           )}
@@ -213,54 +324,86 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
   }
 
   // =========================================================================
-  // VIEW 2: TABLE STAND (Bảng QR Để Bàn A6) & INVITATION (Thiệp Mời A6/A5)
+  // VIEW 2 & 3: TABLE STAND (Bảng QR Để Bàn A6) & INVITATION (Thiệp Mời A6/A5)
   // =========================================================================
   return (
     <div
-      className={`relative mx-auto rounded-3xl overflow-hidden shadow-2xl transition-all duration-300 print:shadow-none print:rounded-none select-none flex flex-col justify-between ${themeStyles.bg} ${
+      className={`relative mx-auto rounded-3xl overflow-hidden shadow-2xl transition-all duration-300 print:shadow-none print:rounded-none select-none flex flex-col justify-between ${themeConfig.bg} ${
         isPrintVersion
           ? 'w-[105mm] h-[148mm] p-[6mm] print:m-0 print:p-[5mm]'
-          : 'w-[360px] sm:w-[390px] h-[520px] sm:h-[560px] p-5 border-4 sm:border-8 ' + themeStyles.border
+          : 'w-[360px] sm:w-[390px] h-[520px] sm:h-[560px] p-5 border-4 sm:border-6 ' + themeConfig.outerBorder
       }`}
       style={{ boxSizing: 'border-box' }}
     >
-      {/* Decorative Outer Border */}
+      {/* Ornate Gold Filigree Corners */}
+      <BaroqueCorner position="top-left" color={themeConfig.cornerColor} className="absolute top-2 left-2 w-12 h-12" />
+      <BaroqueCorner position="top-right" color={themeConfig.cornerColor} className="absolute top-2 right-2 w-12 h-12" />
+      <BaroqueCorner position="bottom-left" color={themeConfig.cornerColor} className="absolute bottom-2 left-2 w-12 h-12" />
+      <BaroqueCorner position="bottom-right" color={themeConfig.cornerColor} className="absolute bottom-2 right-2 w-12 h-12" />
+
+      {/* Dual Hairline Gold Frame */}
       <div
-        className={`absolute inset-2 sm:inset-3 border-2 border-dashed rounded-2xl pointer-events-none ${themeStyles.innerBorder}`}
+        className={`absolute inset-3 border border-double border-2 rounded-2xl pointer-events-none ${themeConfig.innerBorder}`}
       />
 
-      {/* Traditional Double Happiness Emblem for Red Theme */}
-      {theme === 'red' && (
-        <div className="absolute top-4 left-4 w-9 h-9 rounded-full bg-[#B91C1C] border border-[#FCD34D] flex items-center justify-center text-[#FCD34D] font-serif font-bold text-lg shadow-sm">
-          囍
-        </div>
-      )}
+      {/* Watercolor Floral Sprays */}
+      <FloralSpray
+        variant={themeConfig.floralVariant}
+        position="top-right"
+        className="absolute -top-3 -right-3 w-28 h-28 opacity-80 pointer-events-none"
+      />
+      <FloralSpray
+        variant={themeConfig.floralVariant}
+        position="bottom-left"
+        className="absolute -bottom-3 -left-3 w-32 h-32 opacity-85 pointer-events-none"
+      />
 
-      {/* Decorative Top Flourish */}
-      <div className="text-center pt-2 sm:pt-3 relative z-10">
+      {/* Top Section: Monogram, Ceremony Heading & Couple Names */}
+      <div className="text-center pt-2 sm:pt-3 relative z-10 px-3">
+        
+        {/* Double Happiness Emblem for Golden / Starlit */}
+        {normalizedTheme === 'golden' ? (
+          <div className="flex justify-center mb-1">
+            <DoubleHappinessMedallion size={46} variant="red" />
+          </div>
+        ) : normalizedTheme === 'starlit' ? (
+          <div className="flex justify-center mb-1">
+            <DoubleHappinessMedallion size={44} variant="gold" />
+          </div>
+        ) : null}
+
+        {/* Small Top Badge */}
         <div className="flex items-center justify-center gap-1.5 mb-1">
-          <Sparkles className={`w-3.5 h-3.5 ${themeStyles.goldAccent}`} />
-          <span className={`text-[10px] sm:text-xs font-bold uppercase tracking-widest ${themeStyles.titleColor}`}>
+          <Sparkles className={`w-3 h-3 ${themeConfig.accentColor}`} />
+          <span
+            className={`text-[9px] sm:text-[10px] font-cinzel font-bold uppercase tracking-[0.25em] ${themeConfig.titleColor}`}
+          >
             {cardType === 'table_stand' ? 'BẢNG CHIA SẺ KHOẢNH KHẮC' : 'THIỆP MỜI TRỌNG THỂ'}
           </span>
-          <Sparkles className={`w-3.5 h-3.5 ${themeStyles.goldAccent}`} />
+          <Sparkles className={`w-3 h-3 ${themeConfig.accentColor}`} />
         </div>
 
-        {/* Couple Names */}
-        <h2 className={`font-serif text-2xl sm:text-3xl font-bold tracking-tight leading-tight ${themeStyles.bodyColor}`}>
-          {groomName} & {brideName}
+        {/* Couple Names in Flowing Romantic Script or Regal Serif */}
+        <h2 className="leading-tight my-1">
+          <span className={`font-serif text-2xl sm:text-3xl font-extrabold tracking-tight ${themeConfig.titleColor}`}>
+            {groomName}
+          </span>
+          <CalligraphyAmpersand color={themeConfig.cornerColor} className="text-xl sm:text-2xl" />
+          <span className={`font-serif text-2xl sm:text-3xl font-extrabold tracking-tight ${themeConfig.titleColor}`}>
+            {brideName}
+          </span>
         </h2>
 
         {/* Date & Ceremony details */}
-        <p className={`text-[11px] sm:text-xs font-serif italic mt-0.5 ${themeStyles.subColor}`}>
+        <p className={`text-[10px] sm:text-[11px] font-serif italic ${themeConfig.subColor}`}>
           Ngày {weddingDate} • {weddingTime}
         </p>
 
-        {/* Table Number Badge for Table Stand */}
+        {/* Prominent Table Number Badge for Table Stand */}
         {cardType === 'table_stand' && showTableNumber && effectiveTable && (
           <div className="mt-2 inline-block">
             <span
-              className={`px-4 py-1 rounded-full text-xs sm:text-sm font-extrabold uppercase tracking-wider font-serif shadow-sm ${themeStyles.badgeBg} ${themeStyles.badgeText}`}
+              className={`px-4 py-1 rounded-full text-xs sm:text-sm font-extrabold uppercase tracking-wider font-serif shadow-md border ${themeConfig.badgeBg} ${themeConfig.badgeText} ${themeConfig.badgeBorder}`}
             >
               {effectiveTable}
             </span>
@@ -269,94 +412,124 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
       </div>
 
       {/* Central Content Section */}
-      <div className="my-auto py-2 flex flex-col items-center justify-center relative z-10">
+      <div className="my-auto py-1 flex flex-col items-center justify-center relative z-10 px-4">
         {cardType === 'table_stand' ? (
-          /* Table Stand Card View: Prominent QR code */
+          /* ================================================================= */
+          /* TABLE STAND VIEW: High Contrast QR Code for Easy Guest Scanning   */
+          /* ================================================================= */
           <div className="w-full flex flex-col items-center">
             {showQRUpload && (
-              <div className="bg-white p-3 rounded-2xl shadow-md border border-stone-200/80 flex flex-col items-center">
+              <div className="bg-white p-3.5 rounded-2xl shadow-xl border-2 border-[#D4AF37]/50 flex flex-col items-center max-w-[200px]">
                 <div className="p-1 rounded-xl bg-white flex items-center justify-center">
                   <QRCodeSVG
                     value={uploadUrl || 'https://wedding-live-theta.vercel.app/upload'}
-                    size={145}
+                    size={140}
                     level="H"
-                    fgColor={themeStyles.qrFg}
+                    fgColor={themeConfig.qrFg}
                     includeMargin={false}
                   />
                 </div>
-                <div className="mt-1.5 flex items-center gap-1 text-[10px] font-semibold text-stone-600">
-                  <Camera className="w-3 h-3 text-[#B8860B]" />
-                  <span>Mở Camera quét mã để gửi ảnh</span>
+                <div className="mt-1.5 flex items-center gap-1 text-[10px] font-bold text-stone-700">
+                  <Camera className="w-3.5 h-3.5 text-[#B8860B]" />
+                  <span>Mở Camera quét mã gửi ảnh</span>
                 </div>
               </div>
             )}
 
             {/* Instruction Callout */}
-            <div className="mt-2 text-center max-w-[280px]">
-              <p className={`font-serif font-bold text-xs sm:text-sm leading-snug ${themeStyles.titleColor}`}>
+            <div className="mt-2.5 text-center max-w-[270px]">
+              <p className={`font-serif font-bold text-xs sm:text-sm leading-snug ${themeConfig.titleColor}`}>
                 Chiếu Ảnh Trực Tiếp Lên Màn LED
               </p>
-              <p className={`text-[10px] sm:text-[11px] mt-0.5 leading-relaxed ${themeStyles.subColor}`}>
+              <p className={`text-[10px] mt-0.5 leading-relaxed ${themeConfig.subColor}`}>
                 {customNote || 'Chụp ảnh selfie hoặc cùng bàn tiệc để gửi gắm lời chúc hạnh phúc đến cô dâu & chú rể!'}
               </p>
             </div>
           </div>
         ) : (
-          /* Formal Invitation Card View with Personalized Guest Name */
-          <div className="w-full px-4 text-center space-y-2">
-            <div className={`p-3 rounded-2xl border ${themeStyles.innerBorder} bg-white/60 backdrop-blur-xs`}>
-              <span className={`text-[10px] uppercase font-bold tracking-widest block mb-0.5 ${themeStyles.titleColor}`}>
+          /* ================================================================= */
+          /* FORMAL INVITATION CARD VIEW with Personalized Guest Recipient     */
+          /* ================================================================= */
+          <div className="w-full text-center space-y-2">
+            <div
+              className={`p-3.5 rounded-2xl border ${themeConfig.innerBorder} ${themeConfig.cardBg} shadow-sm`}
+            >
+              <span
+                className={`text-[9px] uppercase font-cinzel font-bold tracking-[0.25em] block mb-1 ${themeConfig.titleColor}`}
+              >
                 Trân Trọng Kính Mời
               </span>
 
               {/* Personalized Guest Name */}
-              <div className="my-1.5 pb-1 border-b border-stone-200/60">
-                <h4 className={`font-serif text-lg sm:text-xl font-extrabold ${themeStyles.titleColor}`}>
+              <div className="my-1.5 pb-1 border-b border-dashed border-current opacity-90">
+                <h4
+                  className={`font-serif text-xl sm:text-2xl font-extrabold tracking-wide ${themeConfig.titleColor}`}
+                >
                   {guest ? `${guest.salutation} ${guest.name}` : 'Quý Khách & Gia Đình'}
                 </h4>
                 {guest?.plusOne && (
-                  <p className={`text-[11px] font-serif italic text-stone-600`}>
+                  <p className={`text-[11px] font-serif italic mt-0.5 ${themeConfig.bodyColor}`}>
                     {guest.plusOne}
                   </p>
                 )}
                 {guest?.company && (
-                  <p className="text-[10px] text-stone-500 font-medium">
+                  <p className={`text-[10px] font-medium opacity-85 mt-0.5 ${themeConfig.subColor}`}>
                     {guest.company} {guest.address ? `• ${guest.address}` : ''}
                   </p>
                 )}
               </div>
 
-              <p className={`text-xs font-serif italic ${themeStyles.bodyColor}`}>
+              {/* Architectural Date Badge */}
+              <div className="my-2">
+                <ArchitecturalDateBadge
+                  dateStr={weddingDate}
+                  textColor={themeConfig.titleColor}
+                  subTextColor={themeConfig.subColor}
+                  borderColor={themeConfig.innerBorder}
+                />
+              </div>
+
+              <p className={`text-[11px] font-serif italic ${themeConfig.bodyColor}`}>
                 Đến chung vui cùng gia đình chúng tôi tại:
               </p>
-              <h3 className={`font-serif font-bold text-base mt-0.5 ${themeStyles.titleColor}`}>
+              <h3 className={`font-serif font-bold text-sm sm:text-base mt-0.5 ${themeConfig.titleColor}`}>
                 {venueName}
               </h3>
-              <p className={`text-xs font-semibold ${themeStyles.bodyColor}`}>
+              <p className={`text-[11px] font-semibold ${themeConfig.bodyColor}`}>
                 {hallName}
               </p>
-              <p className={`text-[10px] mt-0.5 ${themeStyles.subColor}`}>
+              <p className={`text-[10px] mt-0.5 ${themeConfig.subColor} max-w-[280px] mx-auto`}>
                 {venueAddress}
               </p>
+
+              {effectiveTable && (
+                <div className="mt-2">
+                  <span
+                    className={`inline-block px-3 py-0.5 rounded-full text-[10px] font-bold uppercase font-serif tracking-wider ${themeConfig.badgeBg} ${themeConfig.badgeText} ${themeConfig.badgeBorder}`}
+                  >
+                    Bàn Tiệc: {effectiveTable}
+                  </span>
+                </div>
+              )}
             </div>
 
-            {/* Mini QR for guest RSVP & photo gallery */}
+            {/* Mini QR for guest upload & RSVP */}
             {showQRUpload && (
-              <div className="flex items-center justify-center gap-3 pt-1">
-                <div className="bg-white p-1 rounded-xl border border-stone-200 shadow-xs flex-shrink-0">
+              <div className="flex items-center justify-center gap-2.5 pt-1">
+                <div className="bg-white p-1 rounded-xl border border-stone-200 shadow-sm flex-shrink-0">
                   <QRCodeSVG
                     value={uploadUrl || 'https://wedding-live-theta.vercel.app/upload'}
-                    size={58}
+                    size={52}
                     level="M"
-                    fgColor={themeStyles.qrFg}
+                    fgColor={themeConfig.qrFg}
                   />
                 </div>
-                <div className="text-left text-[10px] leading-tight">
-                  <span className={`font-bold block ${themeStyles.titleColor}`}>
+                <div className="text-left text-[9px] leading-tight max-w-[200px]">
+                  <span className={`font-bold block ${themeConfig.titleColor}`}>
                     Mã QR Tiệc Cưới
                   </span>
-                  <span className={`block ${themeStyles.subColor} mt-0.5`}>
-                    Quét để xem hình cưới & gửi ảnh chúc mừng
+                  <span className={`block ${themeConfig.subColor} mt-0.5`}>
+                    Quét để gửi ảnh lên màn LED & gửi lời chúc
                   </span>
                 </div>
               </div>
@@ -366,22 +539,24 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
 
         {/* Optional VietQR Gift Corner / Strip */}
         {showVietQR && cardType === 'table_stand' && (
-          <div className="mt-2 pt-2 border-t border-dashed w-full max-w-[280px] border-stone-300/80 flex items-center justify-center gap-2">
+          <div
+            className={`mt-2 pt-1.5 border-t border-dashed w-full max-w-[270px] flex items-center justify-center gap-2 ${themeConfig.innerBorder}`}
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={vietQrUrl}
               alt="VietQR Mừng Cưới"
-              className="w-8 h-8 object-contain bg-white rounded p-0.5 border border-stone-200"
+              className="w-8 h-8 object-contain bg-white rounded p-0.5 border border-stone-200 shadow-xs"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = 'none';
               }}
             />
             <div className="text-left text-[9px] leading-tight">
-              <span className={`font-bold flex items-center gap-1 ${themeStyles.titleColor}`}>
+              <span className={`font-bold flex items-center gap-1 ${themeConfig.titleColor}`}>
                 <Gift className="w-2.5 h-2.5 text-rose-500" />
                 Mừng Cưới Online (VietQR)
               </span>
-              <span className={`block font-mono font-semibold ${themeStyles.subColor}`}>
+              <span className={`block font-mono font-semibold ${themeConfig.subColor}`}>
                 {bankInfo.bankId} • {bankInfo.accountNo}
               </span>
             </div>
@@ -391,12 +566,12 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
 
       {/* Footer Branding Note */}
       <div className="text-center pb-1 relative z-10">
-        <p className={`text-[9px] sm:text-[10px] italic flex items-center justify-center gap-1 ${themeStyles.subColor}`}>
+        <p className={`text-[9px] italic flex items-center justify-center gap-1 ${themeConfig.subColor}`}>
           <Heart className="w-2.5 h-2.5 text-rose-500 fill-rose-500" />
           <span>Sự hiện diện của quý khách là niềm vinh hạnh cho chúng tôi!</span>
         </p>
-        <span className="text-[8px] text-stone-400 block tracking-wider uppercase mt-0.5">
-          WeddingLive • Eventoly Style
+        <span className="text-[8px] opacity-60 block tracking-widest uppercase mt-0.5 font-cinzel">
+          WeddingLive • Luxury Wedding Tech
         </span>
       </div>
     </div>

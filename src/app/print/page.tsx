@@ -173,41 +173,46 @@ export default function PrintPage() {
     guest: currentPreviewGuest,
   };
 
-  const themesList: { id: CardTheme; name: string; bg: string; border: string; desc: string }[] = [
-    {
-      id: 'gold',
-      name: 'Vàng Hoàng Gia',
-      bg: 'bg-[#FAF8F5]',
-      border: 'border-[#D4AF37]',
-      desc: 'Tone kem champagne sang trọng, quý phái',
-    },
+  const themesList: { id: CardTheme; name: string; bg: string; border: string; desc: string; icon: string }[] = [
     {
       id: 'red',
-      name: 'Đỏ Hỷ Truyền Thống',
-      bg: 'bg-[#991B1B]',
-      border: 'border-[#FCD34D]',
-      desc: 'Màu đỏ may mắn với họa tiết chữ Song Hỷ 囍 mạ vàng',
+      name: 'Starlit Garden (Đỏ Hỷ Truyền Thống)',
+      bg: 'bg-[#6B1120]',
+      border: 'border-[#E6C687]',
+      desc: 'Đỏ Velvet Bordeaux, khung Baroque hoàng gia & hoa hồng nhung',
+      icon: '🌹',
     },
     {
       id: 'rose',
-      name: 'Hồng Pastel Lãng Mạn',
-      bg: 'bg-[#FFF5F7]',
-      border: 'border-[#FDA4AF]',
-      desc: 'Hoa hồng dịu ngọt, phong cách đám cưới hiện đại',
-    },
-    {
-      id: 'greenery',
-      name: 'Xanh Botanical Tối Giản',
-      bg: 'bg-[#FAFCFA]',
-      border: 'border-[#86EFAC]',
-      desc: 'Lá khuynh diệp và cành ô-liu tươi mát, tinh khôi',
+      name: 'Golden Soirée (Hồng Phấn & Chữ Hỷ 囍)',
+      bg: 'bg-[#FFF0E6]',
+      border: 'border-[#FB923C]',
+      desc: 'Hoa mẫu đơn cam đào watercolor & chữ Hỷ thư pháp may mắn',
+      icon: '🌸',
     },
     {
       id: 'noir',
-      name: 'Amber Noir Cổ Điển',
-      bg: 'bg-[#1C1917]',
+      name: 'Amber Noir (Cổ Điển Espresso)',
+      bg: 'bg-[#1C1816]',
+      border: 'border-[#CBB282]',
+      desc: 'Tone than cà phê trầm ấm, hoa trà vintage Châu Âu',
+      icon: '☕',
+    },
+    {
+      id: 'greenery',
+      name: 'Poised Romance (Xanh Đêm Hoàng Gia)',
+      bg: 'bg-[#0B1A2A]',
+      border: 'border-[#93C5FD]',
+      desc: 'Xanh Navy đêm đầy sao, hoa dại đồng nội pastel lãng mạn',
+      icon: '✨',
+    },
+    {
+      id: 'gold',
+      name: 'Royal Ivory (Vàng Hoàng Gia Luxury)',
+      bg: 'bg-[#FAF8F5]',
       border: 'border-[#D4AF37]',
-      desc: 'Màu đen quý tộc điểm kim sa vàng thời thượng',
+      desc: 'Giấy mỹ thuật kem ngọc trai, viền vàng dập nổi đẳng cấp',
+      icon: '👑',
     },
   ];
 

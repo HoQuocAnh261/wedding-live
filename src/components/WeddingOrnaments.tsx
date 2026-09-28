@@ -63,7 +63,15 @@ export function FloralSpray({
   position = 'bottom-right',
   className = 'w-24 h-24',
 }: {
-  variant?: 'crimson' | 'peach' | 'vintage' | 'wildflower';
+  variant?:
+    | 'crimson'
+    | 'peach'
+    | 'vintage'
+    | 'wildflower'
+    | 'emerald'
+    | 'lavender'
+    | 'chinoiserie'
+    | 'terracotta';
   position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
   className?: string;
 }) {
@@ -268,7 +276,121 @@ export function FloralSpray({
     );
   }
 
-  // Wildflower (Poised Romance theme)
+  if (variant === 'emerald') {
+    // Emerald Green & Gold Tropical Eucalyptus
+    return (
+      <svg
+        viewBox="0 0 160 160"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className={`${className} ${rotationClass} pointer-events-none drop-shadow-md`}
+      >
+        <g opacity="0.95">
+          <path d="M100 40C125 25 155 35 150 60C145 85 115 85 105 70Z" fill="url(#emeraldLeafGrad)" />
+          <path d="M40 100C25 125 35 155 60 150C85 145 85 115 70 105Z" fill="url(#emeraldLeafGrad)" />
+          <circle cx="115" cy="115" r="32" fill="url(#emeraldRoseGrad)" />
+          <path d="M104 100C115 95 126 97 130 106C134 115 126 124 116 124" stroke="#D1FAE5" strokeWidth="2.5" strokeLinecap="round" opacity="0.8" />
+          <circle cx="70" cy="78" r="22" fill="#047857" opacity="0.9" />
+          <path d="M75 55C90 40 110 45 110 55C110 65 95 70 85 65Z" fill="#FDE68A" opacity="0.85" />
+        </g>
+        <defs>
+          <linearGradient id="emeraldRoseGrad" x1="90" y1="90" x2="145" y2="145" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#10B981" />
+            <stop offset="0.5" stopColor="#059669" />
+            <stop offset="1" stopColor="#064E3B" />
+          </linearGradient>
+          <linearGradient id="emeraldLeafGrad" x1="50" y1="50" x2="150" y2="150" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#6EE7B7" />
+            <stop offset="0.5" stopColor="#047857" />
+            <stop offset="1" stopColor="#022C22" />
+          </linearGradient>
+        </defs>
+      </svg>
+    );
+  }
+
+  if (variant === 'lavender') {
+    // Lavender sprigs & Lilac blooms
+    return (
+      <svg
+        viewBox="0 0 160 160"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className={`${className} ${rotationClass} pointer-events-none drop-shadow-md`}
+      >
+        <g opacity="0.95">
+          <path d="M95 50C120 30 145 35 150 50C155 65 130 85 110 80Z" fill="#A78BFA" opacity="0.7" />
+          <path d="M50 95C35 120 40 145 55 150C70 155 90 130 85 110Z" fill="#C4B5FD" opacity="0.7" />
+          <circle cx="115" cy="115" r="32" fill="url(#lavenderRoseGrad)" />
+          <path d="M104 100C115 95 126 97 130 106C134 115 126 124 116 124" stroke="#F5F3FF" strokeWidth="2.5" strokeLinecap="round" opacity="0.8" />
+          <circle cx="70" cy="78" r="22" fill="#7C3AED" opacity="0.85" />
+        </g>
+        <defs>
+          <linearGradient id="lavenderRoseGrad" x1="90" y1="90" x2="145" y2="145" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#C084FC" />
+            <stop offset="0.5" stopColor="#9333EA" />
+            <stop offset="1" stopColor="#4C1D95" />
+          </linearGradient>
+        </defs>
+      </svg>
+    );
+  }
+
+  if (variant === 'chinoiserie') {
+    // Royal Cobalt Blue Porcelain & Classical Floral Scroll
+    return (
+      <svg
+        viewBox="0 0 160 160"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className={`${className} ${rotationClass} pointer-events-none drop-shadow-md`}
+      >
+        <g opacity="0.95">
+          <path d="M100 40C125 25 150 40 150 60C140 80 120 75 110 65Z" fill="#2563EB" opacity="0.6" />
+          <path d="M40 100C25 125 40 150 60 150C80 140 75 120 65 110Z" fill="#1D4ED8" opacity="0.6" />
+          <circle cx="115" cy="115" r="32" fill="url(#chinoiserieGrad)" />
+          <path d="M104 100C115 95 126 97 130 106C134 115 126 124 116 124" stroke="#EFF6FF" strokeWidth="2.5" strokeLinecap="round" opacity="0.8" />
+          <circle cx="70" cy="78" r="22" fill="#1E40AF" opacity="0.9" />
+        </g>
+        <defs>
+          <linearGradient id="chinoiserieGrad" x1="90" y1="90" x2="145" y2="145" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#60A5FA" />
+            <stop offset="0.5" stopColor="#2563EB" />
+            <stop offset="1" stopColor="#1E3A8A" />
+          </linearGradient>
+        </defs>
+      </svg>
+    );
+  }
+
+  if (variant === 'terracotta') {
+    // Warm Terracotta Rust & Boho Pampas Grass
+    return (
+      <svg
+        viewBox="0 0 160 160"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className={`${className} ${rotationClass} pointer-events-none drop-shadow-md`}
+      >
+        <g opacity="0.95">
+          <path d="M95 50C120 30 145 35 150 50C155 65 130 85 110 80Z" fill="#FDBA74" opacity="0.75" />
+          <path d="M50 95C35 120 40 145 55 150C70 155 90 130 85 110Z" fill="#D97706" opacity="0.65" />
+          <circle cx="115" cy="115" r="32" fill="url(#terracottaGrad)" />
+          <path d="M104 100C115 95 126 97 130 106C134 115 126 124 116 124" stroke="#FFF7ED" strokeWidth="2.5" strokeLinecap="round" opacity="0.8" />
+          <circle cx="70" cy="78" r="22" fill="#B45309" opacity="0.9" />
+        </g>
+        <defs>
+          <linearGradient id="terracottaGrad" x1="90" y1="90" x2="145" y2="145" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#FB923C" />
+            <stop offset="0.5" stopColor="#C2410C" />
+            <stop offset="1" stopColor="#7C2D12" />
+          </linearGradient>
+        </defs>
+      </svg>
+    );
+  }
+
+  // Wildflower (Poised Romance theme) / Minimalist
   return (
     <svg
       viewBox="0 0 160 160"
@@ -334,7 +456,7 @@ export function RealisticWaxSeal({
 }: {
   initials?: string;
   size?: number;
-  variant?: 'gold' | 'crimson' | 'rose' | 'amber';
+  variant?: 'gold' | 'crimson' | 'rose' | 'amber' | 'emerald' | 'navy' | 'purple' | 'terracotta' | 'pearl';
   onClick?: () => void;
 }) {
   const gradientStyles = {
@@ -365,6 +487,41 @@ export function RealisticWaxSeal({
       text: 'text-[#F5EBE1]',
       ring: 'border-[#F5EBE1]/40',
       shadow: 'shadow-[0_8px_20px_rgba(40,30,20,0.5)]',
+    },
+    emerald: {
+      outer: 'from-[#064E3B] via-[#059669] to-[#6EE7B7]',
+      border: 'border-[#D1FAE5]/60',
+      text: 'text-[#D1FAE5]',
+      ring: 'border-[#D1FAE5]/40',
+      shadow: 'shadow-[0_8px_20px_rgba(5,150,105,0.45)]',
+    },
+    navy: {
+      outer: 'from-[#0A192F] via-[#1E3A8A] to-[#60A5FA]',
+      border: 'border-[#DBEAFE]/60',
+      text: 'text-[#DBEAFE]',
+      ring: 'border-[#DBEAFE]/40',
+      shadow: 'shadow-[0_8px_20px_rgba(30,58,138,0.5)]',
+    },
+    purple: {
+      outer: 'from-[#3B0764] via-[#7E22CE] to-[#D8B4FE]',
+      border: 'border-[#F3E8FF]/60',
+      text: 'text-[#F3E8FF]',
+      ring: 'border-[#F3E8FF]/40',
+      shadow: 'shadow-[0_8px_20px_rgba(126,34,206,0.45)]',
+    },
+    terracotta: {
+      outer: 'from-[#7C2D12] via-[#C2410C] to-[#FDBA74]',
+      border: 'border-[#FFEDD5]/60',
+      text: 'text-[#FFEDD5]',
+      ring: 'border-[#FFEDD5]/40',
+      shadow: 'shadow-[0_8px_20px_rgba(194,65,12,0.45)]',
+    },
+    pearl: {
+      outer: 'from-[#A8A29E] via-[#E7E5E4] to-[#FFFFFF]',
+      border: 'border-[#D4AF37]/60',
+      text: 'text-[#44403C]',
+      ring: 'border-[#D4AF37]/40',
+      shadow: 'shadow-[0_8px_20px_rgba(168,162,158,0.35)]',
     },
   }[variant];
 

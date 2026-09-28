@@ -32,7 +32,17 @@ import {
   CalligraphyAmpersand,
 } from '@/components/WeddingOrnaments';
 
-type InvitationTheme = 'starlit' | 'golden' | 'amber' | 'poised' | 'gold';
+type InvitationTheme =
+  | 'starlit'
+  | 'golden'
+  | 'amber'
+  | 'poised'
+  | 'emerald'
+  | 'lavender'
+  | 'chinoiserie'
+  | 'terracotta'
+  | 'minimalist'
+  | 'gold';
 
 function InvitationContent() {
   const searchParams = useSearchParams();
@@ -45,7 +55,18 @@ function InvitationContent() {
   const initialThemeParam = (searchParams.get('theme') as InvitationTheme) || 'starlit';
 
   const [currentTheme, setCurrentTheme] = useState<InvitationTheme>(
-    ['starlit', 'golden', 'amber', 'poised', 'gold'].includes(initialThemeParam)
+    [
+      'starlit',
+      'golden',
+      'amber',
+      'poised',
+      'emerald',
+      'lavender',
+      'chinoiserie',
+      'terracotta',
+      'minimalist',
+      'gold',
+    ].includes(initialThemeParam)
       ? initialThemeParam
       : 'starlit'
   );
@@ -114,7 +135,7 @@ function InvitationContent() {
     triggerWeddingConfetti();
   };
 
-  // Luxury visual theme styling (matching the 4 phone designs from the reference picture)
+  // Luxury visual theme styling (10 distinct styles)
   const themeData = {
     // 1. Starlit Garden (Đỏ rượu Velvet & Baroque)
     starlit: {
@@ -175,7 +196,7 @@ function InvitationContent() {
       frameBorder: 'border-[#93C5FD]',
       cornerColor: '#93C5FD',
       floralVariant: 'wildflower' as const,
-      waxVariant: 'gold' as const,
+      waxVariant: 'navy' as const,
       titleColor: 'text-[#E0F2FE]',
       bodyColor: 'text-white',
       subColor: 'text-[#BAE6FD]/80',
@@ -184,7 +205,92 @@ function InvitationContent() {
       tagline: 'SAVE THE DATE',
       isDark: true,
     },
-    // 5. Royal Ivory Gold
+    // 5. Emerald Garden (Xanh Ngọc Lục Bảo & Lá Khuynh Diệp)
+    emerald: {
+      name: 'Emerald Garden',
+      badge: 'Xanh Ngọc Lục Bảo',
+      screenBg: 'bg-gradient-to-b from-[#042F2E] via-[#064E3B] to-[#022C22]',
+      frameBorder: 'border-[#6EE7B7]',
+      cornerColor: '#A7F3D0',
+      floralVariant: 'emerald' as const,
+      waxVariant: 'emerald' as const,
+      titleColor: 'text-[#D1FAE5]',
+      bodyColor: 'text-[#ECFDF5]',
+      subColor: 'text-[#A7F3D0]/80',
+      envelopeBg: 'bg-gradient-to-b from-[#064E3B] to-[#022C22]',
+      envelopeBorder: 'border-[#6EE7B7]',
+      tagline: 'NATURAL ELEGANCE',
+      isDark: true,
+    },
+    // 6. Lavender Dream (Tím Lavender & Hoa Tử Đằng)
+    lavender: {
+      name: 'Lavender Dream',
+      badge: 'Tím Lavender Mộng Mơ',
+      screenBg: 'bg-gradient-to-b from-[#2E1065] via-[#4C1D95] to-[#1E1B4B]',
+      frameBorder: 'border-[#C084FC]',
+      cornerColor: '#E9D5FF',
+      floralVariant: 'lavender' as const,
+      waxVariant: 'purple' as const,
+      titleColor: 'text-[#F3E8FF]',
+      bodyColor: 'text-[#FAF5FF]',
+      subColor: 'text-[#E9D5FF]/80',
+      envelopeBg: 'bg-gradient-to-b from-[#4C1D95] to-[#2E1065]',
+      envelopeBorder: 'border-[#C084FC]',
+      tagline: 'ENDLESS LOVE',
+      isDark: true,
+    },
+    // 7. Chinoiserie Heritage (Xanh Men Lam Cung Đình)
+    chinoiserie: {
+      name: 'Chinoiserie Heritage',
+      badge: 'Xanh Men Lam Cung Đình',
+      screenBg: 'bg-gradient-to-b from-[#EFF6FF] via-[#DBEAFE] to-[#BFDBFE]',
+      frameBorder: 'border-[#2563EB]',
+      cornerColor: '#1D4ED8',
+      floralVariant: 'chinoiserie' as const,
+      waxVariant: 'navy' as const,
+      titleColor: 'text-[#1E3A8A]',
+      bodyColor: 'text-[#1E40AF]',
+      subColor: 'text-[#3B82F6]/90',
+      envelopeBg: 'bg-gradient-to-b from-[#DBEAFE] to-[#BFDBFE]',
+      envelopeBorder: 'border-[#2563EB]',
+      tagline: 'HỶ SỰ LÂM MÔN',
+      isDark: false,
+    },
+    // 8. Sunset Terracotta (Cam Đất Hoàng Hôn Boho)
+    terracotta: {
+      name: 'Sunset Terracotta',
+      badge: 'Cam Đất Hoàng Hôn',
+      screenBg: 'bg-gradient-to-b from-[#451A03] via-[#7C2D12] to-[#361304]',
+      frameBorder: 'border-[#FDBA74]',
+      cornerColor: '#FDBA74',
+      floralVariant: 'terracotta' as const,
+      waxVariant: 'terracotta' as const,
+      titleColor: 'text-[#FFEDD5]',
+      bodyColor: 'text-[#FFF7ED]',
+      subColor: 'text-[#FED7AA]/80',
+      envelopeBg: 'bg-gradient-to-b from-[#7C2D12] to-[#451A03]',
+      envelopeBorder: 'border-[#FDBA74]',
+      tagline: 'BOHO ROMANCE',
+      isDark: true,
+    },
+    // 9. Modern Minimalist (Trắng Xám Tối Giản Hàn Quốc)
+    minimalist: {
+      name: 'Modern Minimalist',
+      badge: 'Trắng Tinh Khôi Tối Giản',
+      screenBg: 'bg-gradient-to-b from-[#FFFFFF] via-[#F8FAFC] to-[#F1F5F9]',
+      frameBorder: 'border-[#CBD5E1]',
+      cornerColor: '#94A3B8',
+      floralVariant: 'vintage' as const,
+      waxVariant: 'pearl' as const,
+      titleColor: 'text-[#0F172A]',
+      bodyColor: 'text-[#334155]',
+      subColor: 'text-[#64748B]',
+      envelopeBg: 'bg-gradient-to-b from-[#FFFFFF] to-[#F1F5F9]',
+      envelopeBorder: 'border-[#CBD5E1]',
+      tagline: 'FOREVER TOGETHER',
+      isDark: false,
+    },
+    // 10. Royal Ivory Gold
     gold: {
       name: 'Royal Ivory',
       badge: 'Vàng Hoàng Gia Luxury',
@@ -203,38 +309,47 @@ function InvitationContent() {
     },
   }[currentTheme];
 
+  const themeListItems: { id: InvitationTheme; label: string; icon: string }[] = [
+    { id: 'starlit', label: 'Starlit', icon: '🌹' },
+    { id: 'golden', label: 'Golden', icon: '🌸' },
+    { id: 'amber', label: 'Amber', icon: '☕' },
+    { id: 'poised', label: 'Poised', icon: '✨' },
+    { id: 'emerald', label: 'Emerald', icon: '🌿' },
+    { id: 'lavender', label: 'Lavender', icon: '💜' },
+    { id: 'chinoiserie', label: 'Chinoiserie', icon: '🏛️' },
+    { id: 'terracotta', label: 'Terracotta', icon: '🌾' },
+    { id: 'minimalist', label: 'Minimalist', icon: '🤍' },
+    { id: 'gold', label: 'Ivory', icon: '👑' },
+  ];
+
   return (
     <div className="min-h-screen bg-[#110D0C] text-stone-900 font-sans selection:bg-[#F3E5AB]">
       {/* Floating Theme Switcher & Audio Bar */}
-      <div className="fixed top-3 inset-x-0 z-50 flex items-center justify-center px-4 pointer-events-none">
-        <div className="pointer-events-auto flex items-center gap-1.5 sm:gap-2 p-1.5 rounded-full bg-stone-900/90 backdrop-blur-md border border-white/20 shadow-2xl">
+      <div className="fixed top-3 inset-x-0 z-50 flex items-center justify-center px-2 pointer-events-none">
+        <div className="pointer-events-auto flex items-center gap-1 sm:gap-1.5 p-1.5 rounded-full bg-stone-900/90 backdrop-blur-md border border-white/20 shadow-2xl overflow-x-auto max-w-full">
           {/* Theme Selector Pills */}
-          {(['starlit', 'golden', 'amber', 'poised', 'gold'] as InvitationTheme[]).map((thm) => (
+          {themeListItems.map((thm) => (
             <button
-              key={thm}
+              key={thm.id}
               type="button"
-              onClick={() => setCurrentTheme(thm)}
-              className={`px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-semibold transition-all ${
-                currentTheme === thm
+              onClick={() => setCurrentTheme(thm.id)}
+              className={`px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-semibold whitespace-nowrap transition-all ${
+                currentTheme === thm.id
                   ? 'bg-gradient-to-r from-[#D4AF37] to-[#B8860B] text-stone-950 font-bold shadow-md scale-105'
                   : 'text-stone-300 hover:text-white hover:bg-white/10'
               }`}
             >
-              {thm === 'starlit' && '🌹 Starlit'}
-              {thm === 'golden' && '🌸 Golden'}
-              {thm === 'amber' && '☕ Amber'}
-              {thm === 'poised' && '✨ Poised'}
-              {thm === 'gold' && '👑 Ivory'}
+              <span>{thm.icon}</span> <span className="hidden sm:inline">{thm.label}</span>
             </button>
           ))}
 
-          <div className="w-[1px] h-4 bg-white/30 mx-1" />
+          <div className="w-[1px] h-4 bg-white/30 mx-1 flex-shrink-0" />
 
           {/* Audio Button */}
           <button
             type="button"
             onClick={() => setIsPlayingMusic((prev) => !prev)}
-            className="p-1.5 rounded-full text-amber-300 hover:bg-white/10 transition-colors"
+            className="p-1.5 rounded-full text-amber-300 hover:bg-white/10 transition-colors flex-shrink-0"
             title={isPlayingMusic ? 'Tắt nhạc nền' : 'Bật nhạc nền'}
           >
             {isPlayingMusic ? <Volume2 className="w-4 h-4 animate-pulse" /> : <VolumeX className="w-4 h-4" />}

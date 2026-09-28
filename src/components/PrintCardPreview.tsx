@@ -14,7 +14,21 @@ import {
   CalligraphyAmpersand,
 } from '@/components/WeddingOrnaments';
 
-export type CardTheme = 'gold' | 'red' | 'rose' | 'greenery' | 'noir' | 'starlit' | 'golden' | 'amber' | 'poised';
+export type CardTheme =
+  | 'gold'
+  | 'red'
+  | 'rose'
+  | 'greenery'
+  | 'noir'
+  | 'starlit'
+  | 'golden'
+  | 'amber'
+  | 'poised'
+  | 'emerald'
+  | 'lavender'
+  | 'chinoiserie'
+  | 'terracotta'
+  | 'minimalist';
 export type CardType = 'table_stand' | 'invitation' | 'envelope';
 
 export interface CardData {
@@ -66,7 +80,17 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
   const vietQrUrl = `https://img.vietqr.io/image/${bankInfo.bankId}-${bankInfo.accountNo}-compact.png?amount=500000&addInfo=MungCuoi&accountName=${encodeURIComponent(bankInfo.accountName)}`;
 
   // Normalize theme keys (mapping legacy themes to their luxury counterparts)
-  const normalizedTheme: 'starlit' | 'golden' | 'amber' | 'poised' | 'gold' =
+  const normalizedTheme:
+    | 'starlit'
+    | 'golden'
+    | 'amber'
+    | 'poised'
+    | 'emerald'
+    | 'lavender'
+    | 'chinoiserie'
+    | 'terracotta'
+    | 'minimalist'
+    | 'gold' =
     rawTheme === 'red' || rawTheme === 'starlit'
       ? 'starlit'
       : rawTheme === 'rose' || rawTheme === 'golden'
@@ -75,12 +99,22 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
       ? 'amber'
       : rawTheme === 'greenery' || rawTheme === 'poised'
       ? 'poised'
+      : rawTheme === 'emerald'
+      ? 'emerald'
+      : rawTheme === 'lavender'
+      ? 'lavender'
+      : rawTheme === 'chinoiserie'
+      ? 'chinoiserie'
+      : rawTheme === 'terracotta'
+      ? 'terracotta'
+      : rawTheme === 'minimalist'
+      ? 'minimalist'
       : 'gold';
 
   // Effective table number from guest if available
   const effectiveTable = guest?.tableNumber || tableNumber;
 
-  // Luxury Theme Visual Configurations
+  // Luxury Theme Visual Configurations (10 distinct styles)
   const themeConfig = {
     // 1. Starlit Garden (Đỏ Velvet Bordeaux & Vàng Kim Hoàng Gia)
     starlit: {
@@ -152,7 +186,7 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
       innerBorder: 'border-[#60A5FA]/40',
       cornerColor: '#93C5FD',
       floralVariant: 'wildflower' as const,
-      waxVariant: 'gold' as const,
+      waxVariant: 'navy' as const,
       waxInitials: '囍',
       titleColor: 'text-[#E0F2FE]',
       bodyColor: 'text-white',
@@ -166,7 +200,112 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
       envelopeFlap: 'bg-[#0E2235]',
       isDark: true,
     },
-    // 5. Royal Ivory Gold (Kem Ngọc Trai & Viền Vàng Dập Nổi)
+    // 5. Emerald Garden (Xanh Ngọc Lục Bảo & Lá Khuynh Diệp)
+    emerald: {
+      bg: 'bg-gradient-to-br from-[#042F2E] via-[#064E3B] to-[#022C22]',
+      outerBorder: 'border-[#6EE7B7]',
+      innerBorder: 'border-[#34D399]/40',
+      cornerColor: '#A7F3D0',
+      floralVariant: 'emerald' as const,
+      waxVariant: 'emerald' as const,
+      waxInitials: '囍',
+      titleColor: 'text-[#D1FAE5]',
+      bodyColor: 'text-[#ECFDF5]',
+      subColor: 'text-[#A7F3D0]/80',
+      badgeBg: 'bg-gradient-to-r from-[#10B981] to-[#059669]',
+      badgeText: 'text-white',
+      badgeBorder: 'border-[#D1FAE5]',
+      cardBg: 'bg-[#064E3B]/90 backdrop-blur-md',
+      qrFg: '#022C22',
+      accentColor: 'text-[#6EE7B7]',
+      envelopeFlap: 'bg-[#064E3B]',
+      isDark: true,
+    },
+    // 6. Lavender Dream (Tím Lavender & Hoa Tử Đằng)
+    lavender: {
+      bg: 'bg-gradient-to-br from-[#2E1065] via-[#4C1D95] to-[#1E1B4B]',
+      outerBorder: 'border-[#C084FC]',
+      innerBorder: 'border-[#A855F7]/40',
+      cornerColor: '#E9D5FF',
+      floralVariant: 'lavender' as const,
+      waxVariant: 'purple' as const,
+      waxInitials: '囍',
+      titleColor: 'text-[#F3E8FF]',
+      bodyColor: 'text-[#FAF5FF]',
+      subColor: 'text-[#E9D5FF]/80',
+      badgeBg: 'bg-gradient-to-r from-[#A855F7] to-[#7E22CE]',
+      badgeText: 'text-white',
+      badgeBorder: 'border-[#F3E8FF]',
+      cardBg: 'bg-[#4C1D95]/90 backdrop-blur-md',
+      qrFg: '#2E1065',
+      accentColor: 'text-[#D8B4FE]',
+      envelopeFlap: 'bg-[#4C1D95]',
+      isDark: true,
+    },
+    // 7. Chinoiserie Heritage (Xanh Men Lam Cung Đình & Gốm Sứ)
+    chinoiserie: {
+      bg: 'bg-gradient-to-br from-[#EFF6FF] via-[#DBEAFE] to-[#BFDBFE]',
+      outerBorder: 'border-[#2563EB]',
+      innerBorder: 'border-[#1D4ED8]/40',
+      cornerColor: '#1D4ED8',
+      floralVariant: 'chinoiserie' as const,
+      waxVariant: 'navy' as const,
+      waxInitials: '囍',
+      titleColor: 'text-[#1E3A8A]',
+      bodyColor: 'text-[#1E40AF]',
+      subColor: 'text-[#3B82F6]/90',
+      badgeBg: 'bg-gradient-to-r from-[#2563EB] to-[#1D4ED8]',
+      badgeText: 'text-white',
+      badgeBorder: 'border-[#DBEAFE]',
+      cardBg: 'bg-white/90 backdrop-blur-sm',
+      qrFg: '#1E3A8A',
+      accentColor: 'text-[#2563EB]',
+      envelopeFlap: 'bg-[#DBEAFE]',
+      isDark: false,
+    },
+    // 8. Sunset Terracotta (Cam Đất Hoàng Hôn & Boho)
+    terracotta: {
+      bg: 'bg-gradient-to-br from-[#451A03] via-[#7C2D12] to-[#361304]',
+      outerBorder: 'border-[#FDBA74]',
+      innerBorder: 'border-[#FB923C]/50',
+      cornerColor: '#FDBA74',
+      floralVariant: 'terracotta' as const,
+      waxVariant: 'terracotta' as const,
+      waxInitials: '囍',
+      titleColor: 'text-[#FFEDD5]',
+      bodyColor: 'text-[#FFF7ED]',
+      subColor: 'text-[#FED7AA]/80',
+      badgeBg: 'bg-gradient-to-r from-[#EA580C] to-[#C2410C]',
+      badgeText: 'text-white',
+      badgeBorder: 'border-[#FFEDD5]',
+      cardBg: 'bg-[#7C2D12]/90 backdrop-blur-md',
+      qrFg: '#361304',
+      accentColor: 'text-[#FDBA74]',
+      envelopeFlap: 'bg-[#7C2D12]',
+      isDark: true,
+    },
+    // 9. Modern Minimalist (Trắng Tinh Khôi & Xám Bạc Hàn Quốc)
+    minimalist: {
+      bg: 'bg-gradient-to-br from-[#FFFFFF] via-[#F8FAFC] to-[#F1F5F9]',
+      outerBorder: 'border-[#CBD5E1]',
+      innerBorder: 'border-[#94A3B8]/40',
+      cornerColor: '#94A3B8',
+      floralVariant: 'vintage' as const,
+      waxVariant: 'pearl' as const,
+      waxInitials: '囍',
+      titleColor: 'text-[#0F172A]',
+      bodyColor: 'text-[#334155]',
+      subColor: 'text-[#64748B]',
+      badgeBg: 'bg-gradient-to-r from-[#475569] to-[#1E293B]',
+      badgeText: 'text-white',
+      badgeBorder: 'border-[#E2E8F0]',
+      cardBg: 'bg-white/95 backdrop-blur-sm',
+      qrFg: '#0F172A',
+      accentColor: 'text-[#475569]',
+      envelopeFlap: 'bg-[#F1F5F9]',
+      isDark: false,
+    },
+    // 10. Royal Ivory Gold (Kem Ngọc Trai & Viền Vàng Dập Nổi)
     gold: {
       bg: 'bg-gradient-to-br from-[#FAF8F5] via-[#FFFDF9] to-[#F5EFEB]',
       outerBorder: 'border-[#D4AF37]',

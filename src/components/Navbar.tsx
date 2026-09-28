@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Sparkles, Camera, Tv, ShieldCheck, Heart, Printer } from 'lucide-react';
+import { Sparkles, Camera, Tv, ShieldCheck, Heart, Printer, Mail } from 'lucide-react';
 import { isSupabaseConfigured } from '@/lib/supabase';
 
 export function Navbar() {
@@ -22,10 +22,11 @@ export function Navbar() {
 
   const navItems = [
     { href: '/', label: 'Giới Thiệu', icon: Sparkles },
-    { href: '/upload', label: 'Khách Gửi Ảnh', icon: Camera, badge: 'Mobile' },
-    { href: '/live', label: 'Màn LED Sân Khấu', icon: Tv, badge: '16:9 Live' },
-    { href: '/print', label: 'Tạo Thiệp In', icon: Printer, badge: 'A6 In' },
-    { href: '/admin', label: 'Quản Trị Duyệt', icon: ShieldCheck },
+    { href: '/upload', label: 'Khách Gửi Ảnh', icon: Camera, badge: 'Live' },
+    { href: '/invitation', label: 'Thiệp Online', icon: Mail, badge: 'Wax Seal' },
+    { href: '/print', label: 'In Thiệp & Excel', icon: Printer, badge: 'Batch' },
+    { href: '/live', label: 'Màn LED', icon: Tv, badge: '16:9' },
+    { href: '/admin', label: 'Quản Trị', icon: ShieldCheck },
   ];
 
   return (

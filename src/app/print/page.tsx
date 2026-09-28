@@ -1,11 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   Printer,
   Sparkles,
-  QrCode,
   Layout,
   Palette,
   Layers,
@@ -15,14 +14,34 @@ import {
   ExternalLink,
   Copy,
   Info,
+  FileSpreadsheet,
+  Upload,
+  Download,
+  Filter,
+  ArrowUpDown,
+  Building,
+  MapPin,
+  Users,
+  CheckSquare,
+  Square,
+  Search,
+  Share2,
 } from 'lucide-react';
 import { PrintCardPreview, CardData, CardTheme, CardType } from '@/components/PrintCardPreview';
+import { WeddingGuest, GuestSortField } from '@/types/guest';
+import {
+  SAMPLE_WEDDING_GUESTS,
+  parseGuestExcel,
+  downloadSampleGuestExcel,
+  sortGuests,
+} from '@/lib/excel-guest';
 
 export default function PrintPage() {
   const [originUrl, setOriginUrl] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Default card settings
-  const [cardType, setCardType] = useState<CardType>('table_stand');
+  // Card general settings
+  const [cardType, setCardType] = useState<CardType>('envelope');
   const [theme, setTheme] = useState<CardTheme>('gold');
   const [groomName, setGroomName] = useState('Tuấn Kiệt');
   const [brideName, setBrideName] = useState('Minh Anh');
@@ -39,10 +58,21 @@ export default function PrintPage() {
   const [showVietQR, setShowVietQR] = useState(true);
   const [showTableNumber, setShowTableNumber] = useState(true);
 
-  // Batch Printing mode
-  const [isBatchMode, setIsBatchMode] = useState(false);
-  const [batchStart, setBatchStart] = useState(1);
-  const [batchEnd, setBatchEnd] = useState(15);
+  // Guests List & Excel management
+  const [guests, setGuests] = useState<WeddingGuest[]>(SAMPLE_WEDDING_GUESTS);
+  const [selectedGuestIds, setSelectedGuestIds] = useState<Set<string>>(
+    new Set(SAMPLE_WEDDING_GUESTS.map((g) => g.id))
+  );
+  const [activeGuestIndex, setActiveGuestIndex] = useState(0);
+  const [sortField, setSortField] = useState<GuestSortField>('company');
+  const [filterCompany, setFilterCompany] = useState<string>('all');
+  const [filterAddress, setFilterAddress] = useState<string>('all');
+  const [searchGuest, setSearchGuest] = useState('');
+  const [isImporting, setIsImporting] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Mode: Single vs Batch Print
+  const [isBatchMode, setIsBatchMode] = useState(true);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -50,6 +80,79 @@ export default function PrintPage() {
       setOriginUrl(`${origin}/upload`);
     }
   }, []);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  // Handle Excel Upload
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    try {
+      const parsed = await parseGuestExcel(file);
+      if (parsed.length === 0) {
+        alert('Không tìm thấy danh sách khách mời trong file. Vui lòng kiểm tra lại file Excel!');
+      } else {
+        setGuests(parsed);
+        setSelectedGuestIds(new Set(parsed.map((g) => g.id)));
+        setActiveGuestIndex(0);
+        showToast(`Đã nhập thành công ${parsed.length} khách mời từ file Excel!`);
+      }
+    } catch (err) {
+      console.error('Lỗi đọc file Excel:', err);
+      alert('Có lỗi khi đọc file Excel. Vui lòng đảm bảo file có định dạng .xlsx hoặc .xls hợp lệ.');
+    } finally {
+      setIsImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  // Unique companies and addresses for filter dropdowns
+  const uniqueCompanies = Array.from(new Set(guests.map((g) => g.company).filter(Boolean)));
+  const uniqueAddresses = Array.from(new Set(guests.map((g) => g.address).filter(Boolean)));
+
+  // Filter & sort guests
+  const filteredGuests = sortGuests(
+    guests.filter((guest) => {
+      const matchCompany = filterCompany === 'all' || guest.company === filterCompany;
+      const matchAddress = filterAddress === 'all' || guest.address === filterAddress;
+      const matchSearch =
+        searchGuest === '' ||
+        guest.name.toLowerCase().includes(searchGuest.toLowerCase()) ||
+        guest.company.toLowerCase().includes(searchGuest.toLowerCase()) ||
+        guest.address.toLowerCase().includes(searchGuest.toLowerCase());
+      return matchCompany && matchAddress && matchSearch;
+    }),
+    sortField
+  );
+
+  const selectedGuestsForPrint = filteredGuests.filter((g) => selectedGuestIds.has(g.id));
+
+  // Toggle selection
+  const toggleSelectGuest = (id: string) => {
+    const next = new Set(selectedGuestIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setSelectedGuestIds(next);
+  };
+
+  const selectAllFiltered = () => {
+    const next = new Set(selectedGuestIds);
+    filteredGuests.forEach((g) => next.add(g.id));
+    setSelectedGuestIds(next);
+  };
+
+  const deselectAllFiltered = () => {
+    const next = new Set(selectedGuestIds);
+    filteredGuests.forEach((g) => next.delete(g.id));
+    setSelectedGuestIds(next);
+  };
+
+  const currentPreviewGuest = selectedGuestsForPrint[activeGuestIndex] || filteredGuests[0] || guests[0];
 
   const cardData: CardData = {
     groomName,
@@ -67,6 +170,7 @@ export default function PrintPage() {
     customNote,
     cardType,
     theme,
+    guest: currentPreviewGuest,
   };
 
   const themesList: { id: CardTheme; name: string; bg: string; border: string; desc: string }[] = [
@@ -98,23 +202,30 @@ export default function PrintPage() {
       border: 'border-[#86EFAC]',
       desc: 'Lá khuynh diệp và cành ô-liu tươi mát, tinh khôi',
     },
+    {
+      id: 'noir',
+      name: 'Amber Noir Cổ Điển',
+      bg: 'bg-[#1C1917]',
+      border: 'border-[#D4AF37]',
+      desc: 'Màu đen quý tộc điểm kim sa vàng thời thượng',
+    },
   ];
 
   const handlePrint = () => {
     window.print();
   };
 
-  // Generate batch tables array if in batch mode
-  const batchTables = isBatchMode
-    ? Array.from(
-        { length: Math.max(1, batchEnd - batchStart + 1) },
-        (_, i) => `BÀN SỐ ${String(batchStart + i).padStart(2, '0')}`
-      )
-    : [];
-
   return (
-    <div className="min-h-screen bg-[#FAF8F5] text-stone-900 pb-20">
+    <div className="min-h-screen bg-[#FAF8F5] text-stone-900 pb-20 font-sans">
       
+      {/* Toast Alert */}
+      {toastMessage && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl bg-stone-900 text-white font-medium text-xs sm:text-sm shadow-2xl flex items-center gap-2 animate-fade-in border border-amber-400">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
       {/* Top Header Controls (Hidden on Print) */}
       <div className="no-print bg-white border-b border-[#E8DFC8] px-4 sm:px-8 py-5 sticky top-0 z-30 shadow-xs backdrop-blur-md bg-white/95">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -129,7 +240,7 @@ export default function PrintPage() {
             <div>
               <div className="flex items-center gap-2 text-xs font-semibold text-[#B8860B] uppercase tracking-wider mb-0.5">
                 <Printer className="w-3.5 h-3.5" />
-                <span>Công Cụ Thiết Kế In Ấn Chuẩn A6 / A5</span>
+                <span>In Ấn Không Cần Viết Tay • Nhập Excel Chuẩn</span>
               </div>
               <h1 className="font-serif text-xl sm:text-2xl font-bold text-stone-900">
                 Tạo Thiệp Cưới & Bảng QR Bàn Tiệc
@@ -138,28 +249,28 @@ export default function PrintPage() {
           </div>
 
           {/* Action Print Buttons */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
+            <Link
+              href="/invitation"
+              target="_blank"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-rose-50 text-rose-800 border border-rose-200 font-semibold text-xs hover:bg-rose-100 transition-colors"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-rose-600" />
+              <span>Xem Thiệp Online (Mobile)</span>
+            </Link>
+
             <button
               onClick={handlePrint}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#D4AF37] to-[#B8860B] text-stone-950 font-bold text-sm shadow-md hover:brightness-105 active:scale-95 transition-all"
+              disabled={selectedGuestsForPrint.length === 0}
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#D4AF37] to-[#B8860B] text-stone-950 font-bold text-xs sm:text-sm shadow-md hover:brightness-105 active:scale-95 transition-all disabled:opacity-50"
             >
               <Printer className="w-4 h-4" />
               <span>
                 {isBatchMode
-                  ? `In Ngay ${batchTables.length} Bảng Bàn (A6)`
+                  ? `In Hàng Loạt (${selectedGuestsForPrint.length} Thiệp / Bao Thư)`
                   : 'In Bản Này Ngay (Print)'}
               </span>
             </button>
-
-            <a
-              href="https://shopee.vn/search?keyword=chân+đế+mica+a6+để+bàn+tiệc+cưới"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-stone-300 text-stone-700 font-medium text-xs hover:bg-stone-50 transition-colors"
-            >
-              <span>Mua Chân Đế Mica A6</span>
-              <ExternalLink className="w-3 h-3 text-orange-500" />
-            </a>
           </div>
         </div>
       </div>
@@ -167,84 +278,323 @@ export default function PrintPage() {
       {/* Main Workspace (Hidden on Print) */}
       <div className="no-print max-w-7xl mx-auto px-4 sm:px-8 mt-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        {/* Left Control Panel (5 cols) */}
-        <div className="lg:col-span-5 bg-white rounded-3xl p-5 sm:p-6 border border-[#E8DFC8] shadow-sm space-y-6">
+        {/* Left Column: Settings & Excel Guest List (7 cols) */}
+        <div className="lg:col-span-7 space-y-6">
           
-          {/* 1. Mode Selector */}
-          <div>
-            <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2 flex items-center gap-1.5">
-              <Layout className="w-4 h-4 text-[#B8860B]" />
-              <span>1. Chọn loại ấn phẩm</span>
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setCardType('table_stand')}
-                className={`py-2.5 px-3 rounded-2xl text-xs font-semibold border text-center transition-all ${
-                  cardType === 'table_stand'
-                    ? 'bg-[#D4AF37] text-white border-[#D4AF37] shadow-sm'
-                    : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100'
-                }`}
-              >
-                Bảng QR Để Bàn A6
-                <span className="block text-[10px] font-normal opacity-90 mt-0.5">
-                  Đặt vào chân mica bàn tiệc
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setCardType('invitation')}
-                className={`py-2.5 px-3 rounded-2xl text-xs font-semibold border text-center transition-all ${
-                  cardType === 'invitation'
-                    ? 'bg-[#D4AF37] text-white border-[#D4AF37] shadow-sm'
-                    : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100'
-                }`}
-              >
-                Thiệp Mời Cưới Trọng Thể
-                <span className="block text-[10px] font-normal opacity-90 mt-0.5">
-                  Mời khách & kèm mã QR
-                </span>
-              </button>
-            </div>
-          </div>
-
-          {/* 2. Theme Selector */}
-          <div>
-            <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2 flex items-center gap-1.5">
-              <Palette className="w-4 h-4 text-[#B8860B]" />
-              <span>2. Chọn phong cách thiết kế</span>
-            </label>
-            <div className="grid grid-cols-2 gap-2.5">
-              {themesList.map((item) => (
+          {/* Card Type & Themes Selector */}
+          <div className="bg-white rounded-3xl p-5 sm:p-6 border border-[#E8DFC8] shadow-sm space-y-4">
+            <div>
+              <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2 flex items-center gap-1.5">
+                <Layout className="w-4 h-4 text-[#B8860B]" />
+                <span>1. Chọn loại ấn phẩm in</span>
+              </label>
+              <div className="grid grid-cols-3 gap-2">
                 <button
-                  key={item.id}
                   type="button"
-                  onClick={() => setTheme(item.id)}
-                  className={`p-3 rounded-2xl border text-left transition-all relative ${
-                    theme === item.id
-                      ? 'border-[#D4AF37] ring-2 ring-[#D4AF37]/30 bg-amber-50/30 shadow-xs'
-                      : 'border-stone-200 hover:border-stone-300 bg-white'
+                  onClick={() => setCardType('envelope')}
+                  className={`py-2.5 px-2 rounded-2xl text-xs font-bold border text-center transition-all ${
+                    cardType === 'envelope'
+                      ? 'bg-[#D4AF37] text-white border-[#D4AF37] shadow-sm'
+                      : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100'
                   }`}
                 >
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className={`w-3.5 h-3.5 rounded-full border ${item.bg} ${item.border}`} />
-                    <span className="font-serif font-bold text-xs text-stone-900">{item.name}</span>
-                  </div>
-                  <p className="text-[10px] text-stone-500 line-clamp-2 leading-relaxed">
-                    {item.desc}
-                  </p>
+                  ✉️ In Bao Thư (Phong Bì)
+                  <span className="block text-[10px] font-normal opacity-90 mt-0.5">
+                    Có tên khách & cơ quan
+                  </span>
                 </button>
-              ))}
+
+                <button
+                  type="button"
+                  onClick={() => setCardType('invitation')}
+                  className={`py-2.5 px-2 rounded-2xl text-xs font-bold border text-center transition-all ${
+                    cardType === 'invitation'
+                      ? 'bg-[#D4AF37] text-white border-[#D4AF37] shadow-sm'
+                      : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100'
+                  }`}
+                >
+                  📜 In Ruột Thiệp Mời
+                  <span className="block text-[10px] font-normal opacity-90 mt-0.5">
+                    Khổ A5 / A6 chuẩn
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setCardType('table_stand')}
+                  className={`py-2.5 px-2 rounded-2xl text-xs font-bold border text-center transition-all ${
+                    cardType === 'table_stand'
+                      ? 'bg-[#D4AF37] text-white border-[#D4AF37] shadow-sm'
+                      : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100'
+                  }`}
+                >
+                  🍽️ Bảng QR Bàn Tiệc
+                  <span className="block text-[10px] font-normal opacity-90 mt-0.5">
+                    Mica A6 đứng
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* Themes Swatches */}
+            <div>
+              <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2 flex items-center gap-1.5">
+                <Palette className="w-4 h-4 text-[#B8860B]" />
+                <span>2. Chọn phong cách màu sắc</span>
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {themesList.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setTheme(item.id)}
+                    className={`px-3 py-1.5 rounded-full border text-xs font-medium flex items-center gap-1.5 transition-all ${
+                      theme === item.id
+                        ? 'border-[#D4AF37] ring-2 ring-[#D4AF37]/30 bg-amber-50 text-[#B8860B] font-bold'
+                        : 'border-stone-200 hover:bg-stone-50 text-stone-700'
+                    }`}
+                  >
+                    <span className={`w-3 h-3 rounded-full border ${item.bg} ${item.border}`} />
+                    <span>{item.name}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* 3. Couple Information Form */}
-          <div className="space-y-3 pt-2 border-t border-stone-100">
-            <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-[#B8860B]" />
-              <span>3. Thông tin dâu rể & ngày cưới</span>
-            </label>
+          {/* EXCEL IMPORT & GUEST MANAGEMENT SECTION */}
+          <div className="bg-white rounded-3xl p-5 sm:p-6 border border-[#E8DFC8] shadow-sm space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stone-100">
+              <div>
+                <h3 className="font-serif text-lg font-bold text-stone-900 flex items-center gap-2">
+                  <FileSpreadsheet className="w-5 h-5 text-emerald-600" />
+                  <span>Danh Sách Khách Mời In Thiệp ({guests.length} khách)</span>
+                </h3>
+                <p className="text-xs text-stone-500">
+                  Tải file Excel lên để hệ thống tự điền tên từng người, không cần viết tay mỏi mệt
+                </p>
+              </div>
+
+              {/* Excel Import & Sample Download Buttons */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".xlsx, .xls, .csv"
+                  className="hidden"
+                  onChange={handleFileUpload}
+                />
+                
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isImporting}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 text-white font-semibold text-xs hover:bg-emerald-700 transition-colors shadow-xs"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>{isImporting ? 'Đang đọc...' : 'Tải File Excel (.xlsx)'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={downloadSampleGuestExcel}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-300 text-stone-700 font-medium text-xs hover:bg-stone-50 transition-colors"
+                  title="Tải file mẫu về máy để điền"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Tải File Mẫu</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Smart Sort & Filters Bar */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 p-3 rounded-2xl bg-[#FAF8F5] border border-stone-200/80 text-xs">
+              
+              {/* Sort By Field */}
+              <div>
+                <label className="text-[11px] font-bold text-stone-700 block mb-1 flex items-center gap-1">
+                  <ArrowUpDown className="w-3 h-3 text-[#B8860B]" />
+                  <span>Sắp xếp in theo:</span>
+                </label>
+                <select
+                  value={sortField}
+                  onChange={(e) => setSortField(e.target.value as GuestSortField)}
+                  className="w-full px-2.5 py-1.5 rounded-lg border border-stone-300 bg-white font-semibold text-stone-800 outline-none"
+                >
+                  <option value="company">🏢 Theo Công Ty / Nơi Làm Việc</option>
+                  <option value="address">📍 Theo Địa Chỉ / Tỉnh Thành</option>
+                  <option value="group">👥 Theo Mối Quan Hệ / Nhóm</option>
+                  <option value="tableNumber">🍽️ Theo Số Bàn Tiệc</option>
+                  <option value="name">🔤 Theo Tên Khách A-Z</option>
+                </select>
+              </div>
+
+              {/* Filter By Company */}
+              <div>
+                <label className="text-[11px] font-bold text-stone-700 block mb-1 flex items-center gap-1">
+                  <Building className="w-3 h-3 text-[#B8860B]" />
+                  <span>Lọc theo Công Ty:</span>
+                </label>
+                <select
+                  value={filterCompany}
+                  onChange={(e) => setFilterCompany(e.target.value)}
+                  className="w-full px-2.5 py-1.5 rounded-lg border border-stone-300 bg-white text-stone-800 outline-none"
+                >
+                  <option value="all">Tất cả công ty ({guests.length})</option>
+                  {uniqueCompanies.map((c) => (
+                    <option key={c} value={c}>
+                      {c} ({guests.filter((g) => g.company === c).length})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Filter By Address */}
+              <div>
+                <label className="text-[11px] font-bold text-stone-700 block mb-1 flex items-center gap-1">
+                  <MapPin className="w-3 h-3 text-[#B8860B]" />
+                  <span>Lọc theo Khu Vực:</span>
+                </label>
+                <select
+                  value={filterAddress}
+                  onChange={(e) => setFilterAddress(e.target.value)}
+                  className="w-full px-2.5 py-1.5 rounded-lg border border-stone-300 bg-white text-stone-800 outline-none"
+                >
+                  <option value="all">Tất cả địa chỉ</option>
+                  {uniqueAddresses.map((a) => (
+                    <option key={a} value={a}>
+                      {a} ({guests.filter((g) => g.address === a).length})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Quick Search & Bulk Select Controls */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 pt-1">
+              <div className="relative flex-1">
+                <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Tìm theo tên, cơ quan, địa chỉ..."
+                  value={searchGuest}
+                  onChange={(e) => setSearchGuest(e.target.value)}
+                  className="w-full pl-8 pr-3 py-1.5 rounded-xl border border-stone-200 text-xs outline-none bg-stone-50 focus:bg-white focus:border-[#D4AF37]"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 text-xs">
+                <button
+                  type="button"
+                  onClick={selectAllFiltered}
+                  className="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium"
+                >
+                  Chọn tất cả
+                </button>
+                <button
+                  type="button"
+                  onClick={deselectAllFiltered}
+                  className="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium"
+                >
+                  Bỏ chọn
+                </button>
+                <span className="text-stone-500 font-semibold">
+                  Đã chọn: <span className="text-[#B8860B]">{selectedGuestsForPrint.length}</span> / {filteredGuests.length}
+                </span>
+              </div>
+            </div>
+
+            {/* Guest Items Table */}
+            <div className="max-h-72 overflow-y-auto rounded-2xl border border-stone-200 divide-y divide-stone-100 bg-white text-xs">
+              {filteredGuests.length === 0 ? (
+                <div className="p-6 text-center text-stone-400 italic">
+                  Không tìm thấy khách mời nào phù hợp với bộ lọc.
+                </div>
+              ) : (
+                filteredGuests.map((guest, idx) => {
+                  const isSelected = selectedGuestIds.has(guest.id);
+                  const isPreviewing = currentPreviewGuest?.id === guest.id;
+                  const invitationLink = `/invitation?guest=${encodeURIComponent(guest.name)}&salutation=${encodeURIComponent(guest.salutation)}&plus=${encodeURIComponent(guest.plusOne)}&company=${encodeURIComponent(guest.company)}`;
+
+                  return (
+                    <div
+                      key={guest.id}
+                      className={`p-3 flex items-center justify-between gap-3 hover:bg-amber-50/40 transition-colors ${
+                        isPreviewing ? 'bg-amber-50/70 border-l-4 border-l-[#D4AF37]' : ''
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <button
+                          type="button"
+                          onClick={() => toggleSelectGuest(guest.id)}
+                          className="text-stone-400 hover:text-[#D4AF37]"
+                        >
+                          {isSelected ? (
+                            <CheckSquare className="w-4 h-4 text-[#D4AF37]" />
+                          ) : (
+                            <Square className="w-4 h-4" />
+                          )}
+                        </button>
+
+                        <div className="min-w-0 cursor-pointer" onClick={() => setActiveGuestIndex(idx)}>
+                          <div className="flex items-center gap-2">
+                            <span className="font-serif font-bold text-stone-900 text-xs sm:text-sm">
+                              {guest.salutation} {guest.name}
+                            </span>
+                            {guest.plusOne && (
+                              <span className="text-[10px] text-stone-500 italic hidden sm:inline">
+                                ({guest.plusOne})
+                              </span>
+                            )}
+                            {guest.tableNumber && (
+                              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-800">
+                                {guest.tableNumber}
+                              </span>
+                            )}
+                          </div>
+                          
+                          <div className="flex items-center gap-2 text-[10px] text-stone-500 mt-0.5">
+                            <span className="font-medium text-stone-700">{guest.company}</span>
+                            <span>•</span>
+                            <span>{guest.address}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setActiveGuestIndex(idx)}
+                          className={`px-2 py-1 rounded-lg text-[10px] font-medium transition-colors ${
+                            isPreviewing
+                              ? 'bg-[#D4AF37] text-white'
+                              : 'bg-stone-100 hover:bg-stone-200 text-stone-700'
+                          }`}
+                        >
+                          Xem trước
+                        </button>
+
+                        <Link
+                          href={invitationLink}
+                          target="_blank"
+                          className="p-1 rounded-lg text-rose-600 hover:bg-rose-50"
+                          title="Mở link thiệp online riêng cho khách này"
+                        >
+                          <Share2 className="w-3.5 h-3.5" />
+                        </Link>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+
+          {/* Wedding Information Inputs */}
+          <div className="bg-white rounded-3xl p-5 sm:p-6 border border-[#E8DFC8] shadow-sm space-y-3">
+            <h4 className="font-serif font-bold text-sm text-stone-900 uppercase tracking-wider mb-2">
+              3. Thông Tin Lễ Cưới In Trên Thiệp
+            </h4>
 
             <div className="grid grid-cols-2 gap-2.5">
               <div>
@@ -269,7 +619,7 @@ export default function PrintPage() {
 
             <div className="grid grid-cols-2 gap-2.5">
               <div>
-                <label className="text-[11px] text-stone-500 block mb-1">Ngày tổ chức:</label>
+                <label className="text-[11px] text-stone-500 block mb-1">Ngày cưới:</label>
                 <input
                   type="text"
                   value={weddingDate}
@@ -278,7 +628,7 @@ export default function PrintPage() {
                 />
               </div>
               <div>
-                <label className="text-[11px] text-stone-500 block mb-1">Giờ tiệc:</label>
+                <label className="text-[11px] text-stone-500 block mb-1">Giờ khai tiệc:</label>
                 <input
                   type="text"
                   value={weddingTime}
@@ -288,193 +638,94 @@ export default function PrintPage() {
               </div>
             </div>
 
-            {cardType === 'invitation' && (
-              <>
-                <div>
-                  <label className="text-[11px] text-stone-500 block mb-1">Địa điểm / Nhà hàng:</label>
-                  <input
-                    type="text"
-                    value={venueName}
-                    onChange={(e) => setVenueName(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:border-[#D4AF37] outline-none"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-2.5">
-                  <div>
-                    <label className="text-[11px] text-stone-500 block mb-1">Tên sảnh:</label>
-                    <input
-                      type="text"
-                      value={hallName}
-                      onChange={(e) => setHallName(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:border-[#D4AF37] outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[11px] text-stone-500 block mb-1">Địa chỉ:</label>
-                    <input
-                      type="text"
-                      value={venueAddress}
-                      onChange={(e) => setVenueAddress(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:border-[#D4AF37] outline-none"
-                    />
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* 4. Table Numbering & Batch Options (for Table Stand mode) */}
-          {cardType === 'table_stand' && (
-            <div className="space-y-3 pt-2 border-t border-stone-100">
-              <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block flex items-center justify-between">
-                <span className="flex items-center gap-1.5">
-                  <Layers className="w-4 h-4 text-[#B8860B]" />
-                  <span>4. Thiết lập số bàn tiệc</span>
-                </span>
-                <label className="flex items-center gap-1.5 text-xs font-normal text-stone-600 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={isBatchMode}
-                    onChange={(e) => setIsBatchMode(e.target.checked)}
-                    className="rounded text-[#D4AF37] focus:ring-[#D4AF37]"
-                  />
-                  <span>In hàng loạt nhiều bàn</span>
-                </label>
-              </label>
-
-              {isBatchMode ? (
-                <div className="p-3 rounded-2xl bg-amber-50/60 border border-amber-200 text-xs space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-stone-700">In từ:</span>
-                    <input
-                      type="number"
-                      min={1}
-                      max={99}
-                      value={batchStart}
-                      onChange={(e) => setBatchStart(Number(e.target.value))}
-                      className="w-16 px-2 py-1 rounded-lg border border-stone-300 text-center font-bold bg-white"
-                    />
-                    <span className="text-stone-700">đến:</span>
-                    <input
-                      type="number"
-                      min={1}
-                      max={99}
-                      value={batchEnd}
-                      onChange={(e) => setBatchEnd(Number(e.target.value))}
-                      className="w-16 px-2 py-1 rounded-lg border border-stone-300 text-center font-bold bg-white"
-                    />
-                    <span className="text-[#B8860B] font-bold">
-                      ({batchTables.length} bàn A6)
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-stone-500">
-                    💡 Khi bấm &quot;In Ngay&quot;, máy in sẽ tự động in lần lượt từng bàn tiệc từ Bàn {batchStart} tới Bàn {batchEnd} trên từng trang A6 riêng biệt.
-                  </p>
-                </div>
-              ) : (
-                <div>
-                  <input
-                    type="text"
-                    value={tableNumber}
-                    onChange={(e) => setTableNumber(e.target.value)}
-                    placeholder="VD: BÀN SỐ 08 hoặc BÀN KHÁCH VIP"
-                    className="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs font-bold focus:border-[#D4AF37] outline-none"
-                  />
-                </div>
-              )}
+            <div>
+              <label className="text-[11px] text-stone-500 block mb-1">Trung tâm tiệc cưới & Địa chỉ:</label>
+              <input
+                type="text"
+                value={venueName}
+                onChange={(e) => setVenueName(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:border-[#D4AF37] outline-none"
+              />
             </div>
-          )}
-
-          {/* 5. Toggles & QR settings */}
-          <div className="space-y-2 pt-2 border-t border-stone-100 text-xs text-stone-700">
-            <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-1">
-              5. Tùy chọn hiển thị
-            </label>
-
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={showQRUpload}
-                onChange={(e) => setShowQRUpload(e.target.checked)}
-                className="rounded text-[#D4AF37] focus:ring-[#D4AF37]"
-              />
-              <span>Hiển thị Mã QR gửi ảnh lên màn hình LED</span>
-            </label>
-
-            {cardType === 'table_stand' && (
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={showVietQR}
-                  onChange={(e) => setShowVietQR(e.target.checked)}
-                  className="rounded text-[#D4AF37] focus:ring-[#D4AF37]"
-                />
-                <span>Kèm góc nhỏ mã VietQR mừng cưới</span>
-              </label>
-            )}
-
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={showTableNumber}
-                onChange={(e) => setShowTableNumber(e.target.checked)}
-                className="rounded text-[#D4AF37] focus:ring-[#D4AF37]"
-              />
-              <span>Hiển thị huy hiệu số bàn tiệc</span>
-            </label>
-          </div>
-
-          {/* Direct Print Button */}
-          <div className="pt-2">
-            <button
-              onClick={handlePrint}
-              className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#D4AF37] to-[#B8860B] text-stone-950 font-bold text-sm shadow-md hover:brightness-105 active:scale-95 transition-all flex items-center justify-center gap-2"
-            >
-              <Printer className="w-4 h-4" />
-              <span>
-                {isBatchMode
-                  ? `In Hàng Loạt ${batchTables.length} Trang Bàn Tiệc (A6)`
-                  : 'Bấm Để In Ngay (Khổ A6 / A5)'}
-              </span>
-            </button>
-            <p className="text-[11px] text-center text-stone-500 mt-2">
-              Chế độ in tự động căn lề 0mm và xuất chất lượng sắc nét 300 DPI
-            </p>
           </div>
         </div>
 
-        {/* Right Live Preview Workspace (7 cols) */}
-        <div className="lg:col-span-7 flex flex-col items-center sticky top-24">
-          <div className="w-full flex items-center justify-between mb-3 px-2">
-            <div className="flex items-center gap-2 text-xs font-semibold text-stone-600">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Bản Xem Trước Thực Tế (Khổ A6 đứng: 105 x 148 mm)</span>
-            </div>
-            <span className="text-[11px] text-stone-500 bg-stone-100 px-2 py-0.5 rounded-full">
-              Tỉ lệ 1:1 Chuẩn Chân Mica A6
+        {/* Right Column: Real-time Live Preview & Printing Trigger (5 cols) */}
+        <div className="lg:col-span-5 flex flex-col items-center sticky top-24 space-y-4">
+          
+          <div className="w-full flex items-center justify-between px-2 text-xs font-semibold text-stone-600">
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Bản Xem Trước Thực Tế</span>
+            </span>
+            <span className="text-[11px] text-[#B8860B] font-bold">
+              {cardType === 'envelope' ? 'Khổ Bao Thư (Phong Bì)' : 'Khổ A6 (105 x 148 mm)'}
             </span>
           </div>
 
-          {/* Card Preview Container */}
+          {/* Interactive Card Canvas */}
           <div className="w-full flex items-center justify-center p-4 sm:p-6 bg-stone-200/50 rounded-3xl border border-dashed border-stone-300 overflow-hidden shadow-inner">
             <PrintCardPreview data={cardData} />
           </div>
 
-          {/* Practical Printing Tips Box */}
-          <div className="mt-5 w-full bg-amber-50/70 border border-[#E8DFC8] rounded-2xl p-4 text-xs text-stone-600 space-y-1.5">
+          {/* Primary Batch Print Button */}
+          <div className="w-full bg-white rounded-3xl p-5 border border-[#E8DFC8] shadow-sm space-y-3">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-stone-600 font-medium">Chế độ in hàng loạt:</span>
+              <label className="flex items-center gap-1.5 cursor-pointer font-bold text-stone-800">
+                <input
+                  type="checkbox"
+                  checked={isBatchMode}
+                  onChange={(e) => setIsBatchMode(e.target.checked)}
+                  className="rounded text-[#D4AF37] focus:ring-[#D4AF37]"
+                />
+                <span>In tất cả {selectedGuestsForPrint.length} khách đã chọn</span>
+              </label>
+            </div>
+
+            <button
+              onClick={handlePrint}
+              disabled={selectedGuestsForPrint.length === 0}
+              className="w-full py-4 px-4 rounded-2xl bg-gradient-to-r from-[#D4AF37] via-[#E2C364] to-[#B8860B] text-stone-950 font-bold text-sm sm:text-base shadow-lg hover:brightness-105 active:scale-95 transition-all flex items-center justify-center gap-2.5 disabled:opacity-50"
+            >
+              <Printer className="w-5 h-5" />
+              <span>
+                {isBatchMode
+                  ? `In Ngay ${selectedGuestsForPrint.length} ${cardType === 'envelope' ? 'Bao Thư' : 'Thiệp'} Không Cần Viết Tay`
+                  : 'In Bản Này Ngay (Print)'}
+              </span>
+            </button>
+
+            <p className="text-[11px] text-center text-stone-500 leading-relaxed">
+              💡 Máy in sẽ tự động in từng người theo thứ tự đã sắp xếp (
+              <span className="font-semibold text-stone-700">
+                {sortField === 'company'
+                  ? 'Theo Công Ty'
+                  : sortField === 'address'
+                  ? 'Theo Địa Chỉ'
+                  : sortField === 'group'
+                  ? 'Theo Mối Quan Hệ'
+                  : 'Theo Tên A-Z'}
+              </span>
+              ), mỗi người 1 trang in sắc nét chuẩn 300 DPI.
+            </p>
+          </div>
+
+          {/* Printing Experience Tips */}
+          <div className="w-full bg-amber-50/70 border border-[#E8DFC8] rounded-2xl p-4 text-xs text-stone-600 space-y-1.5">
             <div className="flex items-center gap-1.5 font-bold text-amber-900">
               <Info className="w-4 h-4 text-amber-700" />
-              <span>Kinh nghiệm in bảng để bàn tiệc cưới đạt chuẩn đẹp nhất:</span>
+              <span>Kinh nghiệm in thiệp cưới & bao thư:</span>
             </div>
             <ul className="list-disc pl-5 space-y-1 text-[11px] text-stone-600">
               <li>
-                <strong>Loại giấy:</strong> Sử dụng giấy ảnh bóng (Photo Glossy) hoặc giấy mỹ thuật định lượng <strong>200 - 250 gsm</strong> để màu sắc và mã QR in ra nét nhất.
+                <strong>In bao thư:</strong> Đặt xấp phong bì cưới vào khay nạp giấy máy in, chọn khổ giấy tương ứng.
               </li>
               <li>
-                <strong>Cài đặt máy in:</strong> Khi hộp thoại In hiện lên, chọn Khổ giấy là <strong>A6</strong> (hoặc in 4 bản A6 trên 1 tờ A4), bật &quot;Đồ họa nền&quot; (Background graphics).
+                <strong>Cài đặt trình duyệt:</strong> Bật tùy chọn <strong>&quot;Đồ họa nền&quot; (Background graphics)</strong> và chỉnh Lề về <strong>&quot;Không có&quot; (None / 0mm)</strong>.
               </li>
               <li>
-                <strong>Chân đế Mica:</strong> Đặt chân đế Mica chữ T hoặc chữ L khổ A6 đứng (10x15cm) để dựng thẳng trên bàn tiệc.
+                <strong>Chia sẻ online:</strong> Bấm biểu tượng <Share2 className="w-3 h-3 inline text-rose-600" /> ở mỗi khách để gửi link thiệp mời online cá nhân hóa qua Zalo.
               </li>
             </ul>
           </div>
@@ -482,22 +733,23 @@ export default function PrintPage() {
       </div>
 
       {/* ===================================================================== */}
-      {/* PRINT-ONLY CONTAINER: This is what the printer actually prints!       */}
+      {/* PRINT-ONLY CONTAINER: What the printer actually outputs!              */}
       {/* ===================================================================== */}
       <div className="hidden print:block print-only w-full">
-        {isBatchMode && batchTables.length > 0 ? (
-          /* Batch Print multiple A6 table cards */
-          batchTables.map((tbl, index) => (
+        {isBatchMode && selectedGuestsForPrint.length > 0 ? (
+          /* Batch Print personalized invitation / envelope for each selected guest */
+          selectedGuestsForPrint.map((g, index) => (
             <div
-              key={tbl}
-              className={`w-[105mm] h-[148mm] mx-auto ${
-                index < batchTables.length - 1 ? 'print-page-break' : ''
-              }`}
+              key={g.id}
+              className={`mx-auto ${
+                cardType === 'envelope' ? 'w-[160mm] h-[115mm]' : 'w-[105mm] h-[148mm]'
+              } ${index < selectedGuestsForPrint.length - 1 ? 'print-page-break' : ''}`}
             >
               <PrintCardPreview
                 data={{
                   ...cardData,
-                  tableNumber: tbl,
+                  guest: g,
+                  tableNumber: g.tableNumber || tableNumber,
                 }}
                 isPrintVersion={true}
               />
@@ -505,7 +757,11 @@ export default function PrintPage() {
           ))
         ) : (
           /* Single Card Print */
-          <div className="w-[105mm] h-[148mm] mx-auto">
+          <div
+            className={`mx-auto ${
+              cardType === 'envelope' ? 'w-[160mm] h-[115mm]' : 'w-[105mm] h-[148mm]'
+            }`}
+          >
             <PrintCardPreview data={cardData} isPrintVersion={true} />
           </div>
         )}

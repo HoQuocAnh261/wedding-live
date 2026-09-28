@@ -2,11 +2,12 @@
 
 import React from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { Heart, Sparkles, Gift, Camera } from 'lucide-react';
+import { Heart, Sparkles, Gift, Camera, Mail, Building, MapPin } from 'lucide-react';
 import { DEFAULT_BANK_INFO } from '@/lib/mock-data';
+import { WeddingGuest } from '@/types/guest';
 
-export type CardTheme = 'gold' | 'red' | 'rose' | 'greenery';
-export type CardType = 'table_stand' | 'invitation';
+export type CardTheme = 'gold' | 'red' | 'rose' | 'greenery' | 'noir';
+export type CardType = 'table_stand' | 'invitation' | 'envelope';
 
 export interface CardData {
   groomName: string;
@@ -24,6 +25,7 @@ export interface CardData {
   customNote: string;
   cardType: CardType;
   theme: CardTheme;
+  guest?: WeddingGuest;
 }
 
 interface PrintCardPreviewProps {
@@ -49,10 +51,14 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
     customNote,
     cardType,
     theme,
+    guest,
   } = data;
 
   const bankInfo = DEFAULT_BANK_INFO;
   const vietQrUrl = `https://img.vietqr.io/image/${bankInfo.bankId}-${bankInfo.accountNo}-compact.png?amount=500000&addInfo=MungCuoi&accountName=${encodeURIComponent(bankInfo.accountName)}`;
+
+  // Effective table number from guest if available
+  const effectiveTable = guest?.tableNumber || tableNumber;
 
   // Theme styling definitions
   const themeStyles = {
@@ -104,18 +110,119 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
       qrFg: '#14532D',
       goldAccent: 'text-[#16A34A]',
     },
+    noir: {
+      bg: 'bg-[#1C1917]',
+      border: 'border-[#D4AF37]',
+      innerBorder: 'border-stone-700',
+      titleColor: 'text-[#E2C364]',
+      bodyColor: 'text-stone-100',
+      subColor: 'text-stone-400',
+      badgeBg: 'bg-[#D4AF37]',
+      badgeText: 'text-stone-950',
+      qrFg: '#000000',
+      goldAccent: 'text-[#D4AF37]',
+    },
   }[theme];
 
+  // =========================================================================
+  // VIEW 1: ENVELOPE (Bao thư thiệp cưới có tên khách và đơn vị)
+  // =========================================================================
+  if (cardType === 'envelope') {
+    return (
+      <div
+        className={`relative mx-auto rounded-3xl overflow-hidden shadow-2xl transition-all duration-300 print:shadow-none print:rounded-none select-none flex flex-col justify-between ${themeStyles.bg} ${
+          isPrintVersion
+            ? 'w-[160mm] h-[115mm] p-[6mm] print:m-0 print:p-[6mm]'
+            : 'w-[420px] sm:w-[460px] h-[300px] sm:h-[330px] p-5 sm:p-6 border-4 sm:border-6 ' + themeStyles.border
+        }`}
+        style={{ boxSizing: 'border-box' }}
+      >
+        {/* Inner decorative border */}
+        <div className={`absolute inset-2 sm:inset-3 border-2 border-dashed rounded-2xl pointer-events-none ${themeStyles.innerBorder}`} />
+
+        {/* Envelope Top Bar: Monogram & Date */}
+        <div className="flex items-center justify-between relative z-10 pt-1">
+          <div className="flex items-center gap-2">
+            <div className={`w-8 h-8 rounded-full border flex items-center justify-center font-serif font-bold text-xs ${themeStyles.border} ${themeStyles.titleColor}`}>
+              {groomName.charAt(0)}&{brideName.charAt(0)}
+            </div>
+            <div>
+              <span className={`font-serif font-bold text-xs sm:text-sm block ${themeStyles.bodyColor}`}>
+                {groomName} & {brideName}
+              </span>
+              <span className={`text-[10px] block font-serif italic ${themeStyles.subColor}`}>
+                {weddingDate}
+              </span>
+            </div>
+          </div>
+
+          <div className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${themeStyles.border} ${themeStyles.titleColor}`}>
+            Hỷ Sự
+          </div>
+        </div>
+
+        {/* Envelope Center: Personalized Guest Recipient */}
+        <div className="my-auto py-3 px-4 relative z-10 text-center">
+          <span className={`text-[10px] sm:text-xs uppercase font-semibold tracking-widest block mb-1 ${themeStyles.subColor}`}>
+            Kính gửi
+          </span>
+
+          <h3 className={`font-serif text-2xl sm:text-3xl font-extrabold tracking-wide leading-tight ${themeStyles.titleColor}`}>
+            {guest ? `${guest.salutation} ${guest.name}` : 'Quý Khách & Gia Đình'}
+          </h3>
+
+          {guest?.plusOne && (
+            <p className={`text-xs sm:text-sm font-serif italic mt-0.5 ${themeStyles.bodyColor}`}>
+              {guest.plusOne}
+            </p>
+          )}
+
+          {/* Company / Workplace & City label */}
+          {(guest?.company || guest?.address) && (
+            <div className="mt-2.5 inline-flex items-center gap-2 text-[10px] sm:text-[11px] px-3 py-1 rounded-full bg-white/70 border border-stone-200/80 text-stone-700">
+              {guest.company && (
+                <span className="flex items-center gap-1 font-medium">
+                  <Building className="w-3 h-3 text-[#B8860B]" />
+                  <span>{guest.company}</span>
+                </span>
+              )}
+              {guest.company && guest.address && <span>•</span>}
+              {guest.address && (
+                <span className="flex items-center gap-1 text-stone-500">
+                  <MapPin className="w-3 h-3 text-rose-500" />
+                  <span>{guest.address}</span>
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Envelope Bottom Details */}
+        <div className="flex items-center justify-between text-[10px] relative z-10 pb-1 border-t border-dashed border-stone-200/60 pt-2">
+          <span className={`italic font-serif ${themeStyles.subColor}`}>
+            {venueName} {hallName ? `• ${hallName}` : ''}
+          </span>
+          {effectiveTable && (
+            <span className={`font-bold px-2 py-0.5 rounded ${themeStyles.badgeBg} ${themeStyles.badgeText}`}>
+              {effectiveTable}
+            </span>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // VIEW 2: TABLE STAND (Bảng QR Để Bàn A6) & INVITATION (Thiệp Mời A6/A5)
+  // =========================================================================
   return (
     <div
       className={`relative mx-auto rounded-3xl overflow-hidden shadow-2xl transition-all duration-300 print:shadow-none print:rounded-none select-none flex flex-col justify-between ${themeStyles.bg} ${
         isPrintVersion
           ? 'w-[105mm] h-[148mm] p-[6mm] print:m-0 print:p-[5mm]'
-          : 'w-[360px] sm:w-[390px] h-[510px] sm:h-[552px] p-5 border-4 sm:border-8 ' + themeStyles.border
+          : 'w-[360px] sm:w-[390px] h-[520px] sm:h-[560px] p-5 border-4 sm:border-8 ' + themeStyles.border
       }`}
-      style={{
-        boxSizing: 'border-box',
-      }}
+      style={{ boxSizing: 'border-box' }}
     >
       {/* Decorative Outer Border */}
       <div
@@ -150,12 +257,12 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
         </p>
 
         {/* Table Number Badge for Table Stand */}
-        {cardType === 'table_stand' && showTableNumber && tableNumber && (
+        {cardType === 'table_stand' && showTableNumber && effectiveTable && (
           <div className="mt-2 inline-block">
             <span
               className={`px-4 py-1 rounded-full text-xs sm:text-sm font-extrabold uppercase tracking-wider font-serif shadow-sm ${themeStyles.badgeBg} ${themeStyles.badgeText}`}
             >
-              {tableNumber}
+              {effectiveTable}
             </span>
           </div>
         )}
@@ -171,7 +278,7 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
                 <div className="p-1 rounded-xl bg-white flex items-center justify-center">
                   <QRCodeSVG
                     value={uploadUrl || 'https://wedding-live-theta.vercel.app/upload'}
-                    size={150}
+                    size={145}
                     level="H"
                     fgColor={themeStyles.qrFg}
                     includeMargin={false}
@@ -185,7 +292,7 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
             )}
 
             {/* Instruction Callout */}
-            <div className="mt-2.5 text-center max-w-[280px]">
+            <div className="mt-2 text-center max-w-[280px]">
               <p className={`font-serif font-bold text-xs sm:text-sm leading-snug ${themeStyles.titleColor}`}>
                 Chiếu Ảnh Trực Tiếp Lên Màn LED
               </p>
@@ -195,22 +302,40 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
             </div>
           </div>
         ) : (
-          /* Formal Invitation Card View */
+          /* Formal Invitation Card View with Personalized Guest Name */
           <div className="w-full px-4 text-center space-y-2">
             <div className={`p-3 rounded-2xl border ${themeStyles.innerBorder} bg-white/60 backdrop-blur-xs`}>
-              <span className={`text-[10px] uppercase font-bold tracking-widest block mb-1 ${themeStyles.titleColor}`}>
+              <span className={`text-[10px] uppercase font-bold tracking-widest block mb-0.5 ${themeStyles.titleColor}`}>
                 Trân Trọng Kính Mời
               </span>
-              <p className={`text-xs sm:text-sm font-serif italic ${themeStyles.bodyColor}`}>
+
+              {/* Personalized Guest Name */}
+              <div className="my-1.5 pb-1 border-b border-stone-200/60">
+                <h4 className={`font-serif text-lg sm:text-xl font-extrabold ${themeStyles.titleColor}`}>
+                  {guest ? `${guest.salutation} ${guest.name}` : 'Quý Khách & Gia Đình'}
+                </h4>
+                {guest?.plusOne && (
+                  <p className={`text-[11px] font-serif italic text-stone-600`}>
+                    {guest.plusOne}
+                  </p>
+                )}
+                {guest?.company && (
+                  <p className="text-[10px] text-stone-500 font-medium">
+                    {guest.company} {guest.address ? `• ${guest.address}` : ''}
+                  </p>
+                )}
+              </div>
+
+              <p className={`text-xs font-serif italic ${themeStyles.bodyColor}`}>
                 Đến chung vui cùng gia đình chúng tôi tại:
               </p>
-              <h3 className={`font-serif font-bold text-base sm:text-lg mt-1 ${themeStyles.titleColor}`}>
+              <h3 className={`font-serif font-bold text-base mt-0.5 ${themeStyles.titleColor}`}>
                 {venueName}
               </h3>
               <p className={`text-xs font-semibold ${themeStyles.bodyColor}`}>
                 {hallName}
               </p>
-              <p className={`text-[10px] sm:text-[11px] mt-0.5 ${themeStyles.subColor}`}>
+              <p className={`text-[10px] mt-0.5 ${themeStyles.subColor}`}>
                 {venueAddress}
               </p>
             </div>
@@ -218,15 +343,15 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
             {/* Mini QR for guest RSVP & photo gallery */}
             {showQRUpload && (
               <div className="flex items-center justify-center gap-3 pt-1">
-                <div className="bg-white p-1.5 rounded-xl border border-stone-200 shadow-xs flex-shrink-0">
+                <div className="bg-white p-1 rounded-xl border border-stone-200 shadow-xs flex-shrink-0">
                   <QRCodeSVG
                     value={uploadUrl || 'https://wedding-live-theta.vercel.app/upload'}
-                    size={64}
+                    size={58}
                     level="M"
                     fgColor={themeStyles.qrFg}
                   />
                 </div>
-                <div className="text-left text-[10px] sm:text-[11px] leading-tight">
+                <div className="text-left text-[10px] leading-tight">
                   <span className={`font-bold block ${themeStyles.titleColor}`}>
                     Mã QR Tiệc Cưới
                   </span>
@@ -241,12 +366,12 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
 
         {/* Optional VietQR Gift Corner / Strip */}
         {showVietQR && cardType === 'table_stand' && (
-          <div className="mt-2.5 pt-2 border-t border-dashed w-full max-w-[280px] border-stone-300/80 flex items-center justify-center gap-2">
+          <div className="mt-2 pt-2 border-t border-dashed w-full max-w-[280px] border-stone-300/80 flex items-center justify-center gap-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={vietQrUrl}
               alt="VietQR Mừng Cưới"
-              className="w-9 h-9 object-contain bg-white rounded p-0.5 border border-stone-200"
+              className="w-8 h-8 object-contain bg-white rounded p-0.5 border border-stone-200"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = 'none';
               }}

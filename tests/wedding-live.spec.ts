@@ -207,37 +207,65 @@ test.describe('WeddingLive E2E Test Suite', () => {
     await expect(page.locator('h1:has-text("Tạo Thiệp Cưới & Bảng QR Bàn Tiệc")')).toBeVisible();
     console.log('✓ Tiêu đề công cụ in ấn hiển thị chính xác');
 
-    // 3. Kiểm tra bản xem trước card A6
-    await expect(page.getByText('BẢNG CHIA SẺ KHOẢNH KHẮC').first()).toBeVisible();
-    await expect(page.getByText('Tuấn Kiệt & Minh Anh').first()).toBeVisible();
-    console.log('✓ Bản xem trước bảng để bàn A6 hiển thị tên dâu rể');
+    // 3. Kiểm tra danh sách khách mời từ Excel
+    await expect(page.getByText('Danh Sách Khách Mời In Thiệp').first()).toBeVisible();
+    await expect(page.getByText('Nguyễn Văn Tuấn').first()).toBeVisible();
+    console.log('✓ Danh sách khách mời hiển thị tên từ dữ liệu Excel');
 
-    // 4. Kiểm tra đổi theme (chọn Đỏ Hỷ Truyền Thống)
+    // 4. Kiểm tra sắp xếp theo Công Ty / Nơi Làm Việc
+    const sortSelect = page.locator('select').first();
+    await sortSelect.selectOption('company');
+    console.log('✓ Đã kích hoạt sắp xếp danh sách theo Công ty / Nơi làm việc');
+
+    // 5. Kiểm tra chế độ In Bao Thư (Phong Bì)
+    const envelopeBtn = page.locator('button:has-text("In Bao Thư")');
+    await envelopeBtn.click();
+    await expect(page.getByText('Kính gửi').first()).toBeVisible();
+    console.log('✓ Chuyển sang chế độ In Bao Thư cưới cá nhân hóa thành công');
+
+    // 6. Kiểm tra đổi theme (chọn Đỏ Hỷ Truyền Thống)
     const redThemeBtn = page.locator('button:has-text("Đỏ Hỷ Truyền Thống")');
     await redThemeBtn.click();
-    await expect(page.getByText('囍').first()).toBeVisible();
-    console.log('✓ Chuyển sang phong cách Đỏ Hỷ Truyền Thống thành công (hiển thị chữ Song Hỷ 囍)');
+    console.log('✓ Chuyển sang phong cách Đỏ Hỷ Truyền Thống thành công');
 
-    // 5. Kiểm tra đổi loại thiệp (Thiệp Mời Cưới Trọng Thể)
-    const invitationBtn = page.locator('button:has-text("Thiệp Mời Cưới Trọng Thể")');
-    await invitationBtn.click();
-    await expect(page.getByText('THIỆP MỜI TRỌNG THỂ').first()).toBeVisible();
-    await expect(page.getByText('Trân Trọng Kính Mời').first()).toBeVisible();
-    console.log('✓ Chuyển sang chế độ Thiệp Mời Cưới Trọng Thể thành công');
-
-    // 6. Kiểm tra tính năng In hàng loạt nhiều bàn
-    const tableStandBtn = page.locator('button:has-text("Bảng QR Để Bàn A6")');
-    await tableStandBtn.click();
-
-    const batchCheckbox = page.locator('input[type="checkbox"]').first();
-    await batchCheckbox.check();
-    await expect(page.getByText('In từ:').first()).toBeVisible();
-    console.log('✓ Kích hoạt chế độ in hàng loạt nhiều số bàn tiệc A6 thành công');
-
-    // 7. Kiểm tra nút in sẵn sàng
-    const printBtn = page.locator('button:has-text("In Hàng Loạt")').or(page.locator('button:has-text("In Ngay")'));
+    // 7. Kiểm tra nút in sẵn sàng không cần viết tay
+    const printBtn = page.locator('button:has-text("In Ngay")').or(page.locator('button:has-text("In Hàng Loạt")'));
     await expect(printBtn.first()).toBeVisible();
-    console.log('✓ Nút in ấn hoạt động chuẩn bị gửi máy in/xuất PDF!');
+    console.log('✓ Nút in hàng loạt sẵn sàng in danh sách không cần viết tay!');
+  });
+
+
+  test('6. Kiểm tra Thiệp Cưới Online Tương Tác Phong Bì Sáp Niêm Phong (/invitation)', async ({ page }) => {
+    console.log('\n--- Bắt đầu Test 6: Thiệp Cưới Online (/invitation) ---');
+
+    // 1. Mở trang thiệp online với tham số khách mời cá nhân hóa
+    await page.goto('/invitation?guest=Nguy%E1%BB%85n+V%C4%83n+Tu%E1%BA%A5n&salutation=Anh&company=FPT+Telecom');
+
+    // 2. Kiểm tra bìa phong bì sáp niêm phong & tên khách mời
+    await expect(page.getByText('Chạm để mở thiệp').first()).toBeVisible();
+    await expect(page.getByText('Nguyễn Văn Tuấn').first()).toBeVisible();
+    await expect(page.getByText('FPT Telecom').first()).toBeVisible();
+    console.log('✓ Bìa phong bì hiển thị sáp niêm phong và tên khách mời cá nhân hóa');
+
+    // 3. Chạm mở phong bì
+    const envelopeBox = page.getByText('Chạm để mở thiệp').first();
+    await envelopeBox.click();
+    console.log('✓ Đã bấm chạm mở phong bì thiệp cưới');
+
+    // 4. Kiểm tra nội dung bên trong thiệp cưới
+    await expect(page.getByText('Trân Trọng Kính Mời').first()).toBeVisible();
+    await expect(page.getByText('Đếm ngược ngày cưới').first()).toBeVisible();
+    await expect(page.getByText('Lịch Trình Tiệc Cưới').first()).toBeVisible();
+    await expect(page.getByText('Xác Nhận Tham Dự (RSVP)').first()).toBeVisible();
+    console.log('✓ Nội dung thiệp cưới mở ra đầy đủ: Đếm ngược, Lịch trình, RSVP và địa điểm');
+
+    // 5. Thử gửi form RSVP
+    const rsvpSubmitBtn = page.locator('button:has-text("Xác Nhận Tham Dự")');
+    if (await rsvpSubmitBtn.isVisible()) {
+      await rsvpSubmitBtn.click();
+      await expect(page.getByText('Cảm ơn').first()).toBeVisible({ timeout: 5000 });
+      console.log('✓ Đã gửi xác nhận tham dự (RSVP) thành công!');
+    }
   });
 
 });

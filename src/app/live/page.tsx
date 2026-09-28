@@ -140,6 +140,37 @@ export default function LiveStagePage() {
     };
   }, [triggerPriorityDisplay, loadApprovedPhotos]);
 
+  // 3. Cross-device Fallback Auto-Poll (Every 2.5s)
+  // Ensures photos submitted from phones anywhere appear on this PC screen immediately
+  useEffect(() => {
+    const pollInterval = setInterval(async () => {
+      try {
+        const latest = await getPhotos(eventSlug);
+        const approved = latest.filter((p) => p.status === 'approved');
+
+        setPhotos((prev) => {
+          const prevIds = new Set(prev.map((p) => p.id));
+          const newItems = approved.filter((p) => !prevIds.has(p.id));
+
+          if (newItems.length > 0) {
+            // Trigger priority interrupt on the newest photo!
+            triggerPriorityDisplay(newItems[0]);
+            return [...newItems, ...prev];
+          }
+
+          if (approved.length !== prev.length) {
+            return approved;
+          }
+          return prev;
+        });
+      } catch {
+        // Silently continue polling
+      }
+    }, 2500);
+
+    return () => clearInterval(pollInterval);
+  }, [eventSlug, triggerPriorityDisplay]);
+
   // Slideshow Auto-Advance Timer (every 5 seconds)
   useEffect(() => {
     if (isPaused || isInterrupting || photos.length <= 1) return;

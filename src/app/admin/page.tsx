@@ -50,6 +50,8 @@ export default function AdminPage() {
 
   useEffect(() => {
     fetchPhotosList();
+    const interval = setInterval(fetchPhotosList, 4000);
+    return () => clearInterval(interval);
   }, [fetchPhotosList]);
 
   // Show temporary action toast

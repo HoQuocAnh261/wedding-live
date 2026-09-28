@@ -9,7 +9,7 @@ export default defineConfig({
   fullyParallel: false,
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: 'https://wedding-live-theta.vercel.app',
     trace: 'on-first-retry',
     permissions: ['clipboard-read', 'clipboard-write'],
     viewport: { width: 1280, height: 720 },

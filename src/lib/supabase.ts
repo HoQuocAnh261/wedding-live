@@ -59,16 +59,35 @@ export async function getPhotos(eventSlug = 'dam-cuoi-minh-anh'): Promise<Weddin
 
       if (error) {
         console.error('Supabase getPhotos error:', error);
-        return getLocalPhotos();
+        return getServerOrLocalPhotos(eventSlug);
       }
       return (data as WeddingPhoto[]) || [];
     } catch (err) {
-      console.warn('Error fetching from Supabase, falling back to local photos:', err);
-      return getLocalPhotos();
+      console.warn('Error fetching from Supabase, falling back to server/local photos:', err);
+      return getServerOrLocalPhotos(eventSlug);
     }
   } else {
-    return getLocalPhotos();
+    return getServerOrLocalPhotos(eventSlug);
   }
+}
+
+async function getServerOrLocalPhotos(eventSlug: string): Promise<WeddingPhoto[]> {
+  if (typeof window !== 'undefined') {
+    try {
+      const res = await fetch(`/api/photos?eventSlug=${encodeURIComponent(eventSlug)}`, {
+        cache: 'no-store',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          return data;
+        }
+      }
+    } catch (err) {
+      console.warn('Could not fetch from /api/photos, using local storage:', err);
+    }
+  }
+  return getLocalPhotos();
 }
 
 /**
@@ -135,7 +154,7 @@ export async function uploadWeddingPhoto({
 
     return data as WeddingPhoto;
   } else {
-    // Mock / Offline mode: Convert file to Base64 or Object URL and save locally
+    // Self-hosted / Server Sync mode: Convert file to Base64
     const base64Url = await new Promise<string>((resolve) => {
       const reader = new FileReader();
       reader.onloadend = () => resolve(reader.result as string);
@@ -154,7 +173,20 @@ export async function uploadWeddingPhoto({
 
     saveLocalPhoto(newPhoto);
 
-    // Broadcast to /live tab in demo mode
+    // Sync to /api/photos so other devices (e.g. computer/projector) get this photo!
+    if (typeof window !== 'undefined') {
+      try {
+        await fetch('/api/photos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newPhoto),
+        });
+      } catch (postErr) {
+        console.warn('Could not POST to /api/photos:', postErr);
+      }
+    }
+
+    // Broadcast to /live tab in demo mode on same device
     if (demoBroadcastChannel) {
       demoBroadcastChannel.postMessage({
         type: 'NEW_PHOTO',
@@ -183,6 +215,13 @@ export async function updatePhotoStatus(id: string, status: PhotoStatus): Promis
     return true;
   } else {
     updateLocalPhotoStatus(id, status);
+    if (typeof window !== 'undefined') {
+      fetch('/api/photos', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status }),
+      }).catch(console.warn);
+    }
     if (demoBroadcastChannel) {
       demoBroadcastChannel.postMessage({
         type: 'UPDATE_STATUS',
@@ -211,6 +250,11 @@ export async function deletePhoto(id: string): Promise<boolean> {
     return true;
   } else {
     deleteLocalPhoto(id);
+    if (typeof window !== 'undefined') {
+      fetch(`/api/photos?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+      }).catch(console.warn);
+    }
     if (demoBroadcastChannel) {
       demoBroadcastChannel.postMessage({
         type: 'DELETE_PHOTO',

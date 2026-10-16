@@ -5,6 +5,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { Heart, Sparkles, Gift, Camera, Mail, Building, MapPin } from 'lucide-react';
 import { DEFAULT_BANK_INFO } from '@/lib/mock-data';
 import { WeddingGuest } from '@/types/guest';
+import { useLanguage } from '@/context/LanguageContext';
 import {
   BaroqueCorner,
   FloralSpray,
@@ -57,6 +58,7 @@ interface PrintCardPreviewProps {
 }
 
 export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPreviewProps) {
+  const { language } = useLanguage();
   const {
     groomName,
     brideName,
@@ -378,7 +380,7 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
                 {groomName} &amp; {brideName}
               </span>
               <span className={`text-[10px] block font-serif italic ${themeConfig.subColor}`}>
-                Lễ Thành Hôn • {weddingDate}
+                {language === 'en' ? 'Wedding Celebration' : 'Lễ Thành Hôn'} • {weddingDate}
               </span>
             </div>
           </div>
@@ -389,7 +391,7 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
               className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border shadow-xs ${themeConfig.outerBorder} ${themeConfig.titleColor} bg-white/10 backdrop-blur-xs flex items-center gap-1`}
             >
               <Sparkles className="w-2.5 h-2.5" />
-              <span>Hỷ Sự</span>
+              <span>{language === 'en' ? 'Special Union' : 'Hỷ Sự'}</span>
             </div>
           </div>
         </div>
@@ -401,7 +403,7 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
             <span
               className={`text-[10px] sm:text-xs uppercase font-cinzel font-semibold tracking-[0.25em] ${themeConfig.subColor}`}
             >
-              Kính gửi
+              {language === 'en' ? 'To:' : 'Kính gửi'}
             </span>
             <div className={`h-[1px] w-6 bg-current ${themeConfig.accentColor}`} />
           </div>
@@ -410,7 +412,7 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
           <h3
             className={`font-serif text-2xl sm:text-3xl font-extrabold tracking-wide leading-tight drop-shadow-xs ${themeConfig.titleColor}`}
           >
-            {guest ? `${guest.salutation} ${guest.name}` : 'Quý Khách & Gia Đình'}
+            {guest ? `${guest.salutation} ${guest.name}` : (language === 'en' ? 'Distinguished Guest & Family' : 'Quý Khách & Gia Đình')}
           </h3>
 
           {/* Plus One Companion */}
@@ -517,7 +519,9 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
           <span
             className={`text-[9px] sm:text-[10px] font-cinzel font-bold uppercase tracking-[0.25em] ${themeConfig.titleColor}`}
           >
-            {cardType === 'table_stand' ? 'BẢNG CHIA SẺ KHOẢNH KHẮC' : 'THIỆP MỜI TRỌNG THỂ'}
+            {cardType === 'table_stand'
+              ? (language === 'en' ? 'LIVE GUEST PHOTO SHARING' : 'BẢNG CHIA SẺ KHOẢNH KHẮC')
+              : (language === 'en' ? 'FORMAL INVITATION' : 'THIỆP MỜI TRỌNG THỂ')}
           </span>
           <Sparkles className={`w-3 h-3 ${themeConfig.accentColor}`} />
         </div>
@@ -535,7 +539,7 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
 
         {/* Date & Ceremony details */}
         <p className={`text-[10px] sm:text-[11px] font-serif italic ${themeConfig.subColor}`}>
-          Ngày {weddingDate} • {weddingTime}
+          {language === 'en' ? `Date: ${weddingDate} • ${weddingTime}` : `Ngày ${weddingDate} • ${weddingTime}`}
         </p>
 
         {/* Prominent Table Number Badge for Table Stand */}
@@ -570,7 +574,7 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
                 </div>
                 <div className="mt-1.5 flex items-center gap-1 text-[10px] font-bold text-stone-700">
                   <Camera className="w-3.5 h-3.5 text-[#B8860B]" />
-                  <span>Mở Camera quét mã gửi ảnh</span>
+                  <span>{language === 'en' ? 'Scan with Camera to Upload' : 'Mở Camera quét mã gửi ảnh'}</span>
                 </div>
               </div>
             )}
@@ -578,10 +582,12 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
             {/* Instruction Callout */}
             <div className="mt-2.5 text-center max-w-[270px]">
               <p className={`font-serif font-bold text-xs sm:text-sm leading-snug ${themeConfig.titleColor}`}>
-                Chiếu Ảnh Trực Tiếp Lên Màn LED
+                {language === 'en' ? 'Instantly Stream Photos on Screen' : 'Chiếu Ảnh Trực Tiếp Lên Màn LED'}
               </p>
               <p className={`text-[10px] mt-0.5 leading-relaxed ${themeConfig.subColor}`}>
-                {customNote || 'Chụp ảnh selfie hoặc cùng bàn tiệc để gửi gắm lời chúc hạnh phúc đến cô dâu & chú rể!'}
+                {customNote || (language === 'en'
+                  ? 'Take selfies or table group photos to stream warm wishes live to the stage screen!'
+                  : 'Chụp ảnh selfie hoặc cùng bàn tiệc để gửi gắm lời chúc hạnh phúc đến cô dâu & chú rể!')}
               </p>
             </div>
           </div>
@@ -596,7 +602,7 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
               <span
                 className={`text-[9px] uppercase font-cinzel font-bold tracking-[0.25em] block mb-1 ${themeConfig.titleColor}`}
               >
-                Trân Trọng Kính Mời
+                {language === 'en' ? 'The Honor of Your Presence' : 'Trân Trọng Kính Mời'}
               </span>
 
               {/* Personalized Guest Name */}
@@ -604,7 +610,7 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
                 <h4
                   className={`font-serif text-xl sm:text-2xl font-extrabold tracking-wide ${themeConfig.titleColor}`}
                 >
-                  {guest ? `${guest.salutation} ${guest.name}` : 'Quý Khách & Gia Đình'}
+                  {guest ? `${guest.salutation} ${guest.name}` : (language === 'en' ? 'Distinguished Guest & Family' : 'Quý Khách & Gia Đình')}
                 </h4>
                 {guest?.plusOne && (
                   <p className={`text-[11px] font-serif italic mt-0.5 ${themeConfig.bodyColor}`}>
@@ -629,7 +635,7 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
               </div>
 
               <p className={`text-[11px] font-serif italic ${themeConfig.bodyColor}`}>
-                Đến chung vui cùng gia đình chúng tôi tại:
+                {language === 'en' ? 'Request the pleasure of your company at:' : 'Đến chung vui cùng gia đình chúng tôi tại:'}
               </p>
               <h3 className={`font-serif font-bold text-sm sm:text-base mt-0.5 ${themeConfig.titleColor}`}>
                 {venueName}
@@ -646,7 +652,7 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
                   <span
                     className={`inline-block px-3 py-0.5 rounded-full text-[10px] font-bold uppercase font-serif tracking-wider ${themeConfig.badgeBg} ${themeConfig.badgeText} ${themeConfig.badgeBorder}`}
                   >
-                    Bàn Tiệc: {effectiveTable}
+                    {language === 'en' ? `Table: ${effectiveTable}` : `Bàn Tiệc: ${effectiveTable}`}
                   </span>
                 </div>
               )}
@@ -665,10 +671,10 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
                 </div>
                 <div className="text-left text-[9px] leading-tight max-w-[200px]">
                   <span className={`font-bold block ${themeConfig.titleColor}`}>
-                    Mã QR Tiệc Cưới
+                    {language === 'en' ? 'Wedding Live QR' : 'Mã QR Tiệc Cưới'}
                   </span>
                   <span className={`block ${themeConfig.subColor} mt-0.5`}>
-                    Quét để gửi ảnh lên màn LED & gửi lời chúc
+                    {language === 'en' ? 'Scan to share photos & send wishes' : 'Quét để gửi ảnh lên màn LED & gửi lời chúc'}
                   </span>
                 </div>
               </div>
@@ -693,7 +699,7 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
             <div className="text-left text-[9px] leading-tight">
               <span className={`font-bold flex items-center gap-1 ${themeConfig.titleColor}`}>
                 <Gift className="w-2.5 h-2.5 text-rose-500" />
-                Mừng Cưới Online (VietQR)
+                {language === 'en' ? 'Wedding Registry & Gifts' : 'Mừng Cưới Online (VietQR)'}
               </span>
               <span className={`block font-mono font-semibold ${themeConfig.subColor}`}>
                 {bankInfo.bankId} • {bankInfo.accountNo}
@@ -707,7 +713,7 @@ export function PrintCardPreview({ data, isPrintVersion = false }: PrintCardPrev
       <div className="text-center pb-1 relative z-10">
         <p className={`text-[9px] italic flex items-center justify-center gap-1 ${themeConfig.subColor}`}>
           <Heart className="w-2.5 h-2.5 text-rose-500 fill-rose-500" />
-          <span>Sự hiện diện của quý khách là niềm vinh hạnh cho chúng tôi!</span>
+          <span>{language === 'en' ? 'The honor of your presence is our greatest joy!' : 'Sự hiện diện của quý khách là niềm vinh hạnh cho chúng tôi!'}</span>
         </p>
         <span className="text-[8px] opacity-60 block tracking-widest uppercase mt-0.5 font-cinzel">
           WeddingLive • Luxury Wedding Tech

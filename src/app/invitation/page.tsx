@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { triggerWeddingConfetti } from '@/lib/confetti';
 import { VietQRModal } from '@/components/VietQRModal';
+import { useLanguage } from '@/context/LanguageContext';
 import {
   BaroqueCorner,
   FloralSpray,
@@ -45,11 +46,13 @@ type InvitationTheme =
   | 'gold';
 
 function InvitationContent() {
+  const { t, language } = useLanguage();
   const searchParams = useSearchParams();
 
   // Personalized guest URL parameters
   const guestNameParam = searchParams.get('guest') || '';
-  const salutationParam = searchParams.get('salutation') || 'Bạn';
+  const defaultSalutation = language === 'en' ? 'Dear' : 'Bạn';
+  const salutationParam = searchParams.get('salutation') || defaultSalutation;
   const plusOneParam = searchParams.get('plus') || '';
   const companyParam = searchParams.get('company') || '';
   const initialThemeParam = (searchParams.get('theme') as InvitationTheme) || 'starlit';
@@ -93,9 +96,9 @@ function InvitationContent() {
     seconds: 0,
   });
 
-  const coupleNames = process.env.NEXT_PUBLIC_EVENT_NAME || 'Minh Anh & Tuấn Kiệt';
-  const groomName = 'Tuấn Kiệt';
-  const brideName = 'Minh Anh';
+  const coupleNames = process.env.NEXT_PUBLIC_EVENT_NAME || (language === 'en' ? 'Sarah & Michael' : 'Minh Anh & Tuấn Kiệt');
+  const groomName = language === 'en' ? 'Michael' : 'Tuấn Kiệt';
+  const brideName = language === 'en' ? 'Sarah' : 'Minh Anh';
   const weddingDateStr = '2026-10-26T18:00:00';
 
   useEffect(() => {
@@ -431,7 +434,7 @@ function InvitationContent() {
 
                 {/* Date & Location Line */}
                 <p className={`text-[11px] font-serif italic tracking-wide mt-1.5 ${themeData.subColor}`}>
-                  26.10.2026 • GEM CENTER, TP.HCM
+                  {language === 'en' ? 'October 26, 2026 • The Glasshouse Estate, New York' : '26.10.2026 • GEM CENTER, TP.HCM'}
                 </p>
               </div>
 
@@ -447,24 +450,26 @@ function InvitationContent() {
 
                   {/* Envelope Header: Tiny Monogram */}
                   <div className="w-full flex items-center justify-between text-[9px] relative z-10 opacity-75">
-                    <span className="font-serif italic text-white/90">Lễ Thành Hôn</span>
+                    <span className="font-serif italic text-white/90">
+                      {language === 'en' ? 'Wedding Celebration' : 'Lễ Thành Hôn'}
+                    </span>
                     <span className="font-mono text-white/90">26.10.2026</span>
                   </div>
 
                   {/* 3D Wax Seal Button */}
                   <div className="relative z-20 my-auto flex flex-col items-center">
                     <RealisticWaxSeal
-                      initials="囍"
+                      initials={language === 'en' ? 'S&M' : '囍'}
                       size={58}
                       variant={themeData.waxVariant}
                       onClick={handleOpenEnvelope}
                     />
                     <div className="mt-2 text-center">
                       <span className="text-xs font-bold uppercase tracking-widest text-amber-200 block drop-shadow-md group-hover:scale-105 transition-transform">
-                        Chạm để mở thiệp
+                        {t.invitation.tapToOpen}
                       </span>
                       <span className="text-[9px] text-amber-300/70 block mt-0.5">
-                        Tap to Open Invitation
+                        {t.invitation.tapToOpenSub}
                       </span>
                     </div>
                   </div>
@@ -480,10 +485,10 @@ function InvitationContent() {
                   <span
                     className={`text-[9px] uppercase tracking-[0.2em] font-cinzel font-semibold block ${themeData.subColor}`}
                   >
-                    Kính gửi
+                    {t.invitation.guestTo}
                   </span>
                   <p className={`font-serif font-bold text-sm sm:text-base ${themeData.titleColor}`}>
-                    {salutationParam} {guestNameParam || 'Quý Khách'}
+                    {salutationParam} {guestNameParam || (language === 'en' ? 'Distinguished Guest' : 'Quý Khách')}
                   </p>
                   {plusOneParam && (
                     <p className={`text-[10px] italic ${themeData.bodyColor}`}>
@@ -502,7 +507,7 @@ function InvitationContent() {
               {/* Bottom Instructions Footer */}
               <div className="pb-3 relative z-10">
                 <p className={`text-[10px] italic ${themeData.subColor}`}>
-                  Chạm vào con dấu sáp niêm phong để mở trọn vẹn thiệp cưới ✨
+                  {t.invitation.tapHint}
                 </p>
               </div>
             </div>
@@ -522,7 +527,7 @@ function InvitationContent() {
               className="inline-flex items-center gap-1 text-amber-300 hover:text-white font-medium transition-colors"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>Đóng lại phong bì</span>
+              <span>{t.invitation.closeEnvelope}</span>
             </button>
             <span className="text-[10px] text-stone-400 uppercase tracking-widest font-cinzel">
               {themeData.name}
@@ -534,20 +539,20 @@ function InvitationContent() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80"
-              alt="Ảnh cưới dâu rể"
+              alt="Wedding couple"
               className="w-full h-full object-cover opacity-85"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-stone-950/40 to-transparent" />
 
             <div className="absolute bottom-6 inset-x-6 text-center text-white">
               <span className="text-[10px] uppercase tracking-[0.25em] font-cinzel font-semibold text-amber-300">
-                SAVE THE DATE
+                {t.invitation.saveTheDate}
               </span>
               <h2 className="font-script text-4xl sm:text-5xl text-[#FCEEB5] drop-shadow-md mt-1">
                 {coupleNames}
               </h2>
               <p className="font-serif italic text-amber-200 text-xs mt-1">
-                26 Tháng 10, 2026 • GEM Center, TP. Hồ Chí Minh
+                {language === 'en' ? 'October 26, 2026 • The Glasshouse Estate, New York' : '26 Tháng 10, 2026 • GEM Center, TP. Hồ Chí Minh'}
               </p>
             </div>
           </div>
@@ -562,17 +567,17 @@ function InvitationContent() {
             </div>
 
             <span className="text-[10px] uppercase font-cinzel tracking-[0.25em] text-[#B8860B] font-bold block mb-1">
-              Thư Mời Trọng Thể
+              {t.invitation.formalInviteTitle}
             </span>
 
             <h3 className="font-serif text-2xl font-bold text-stone-900">
-              Trân Trọng Kính Mời
+              {t.invitation.requestHonor}
             </h3>
 
             {/* Personalized Guest Box */}
             <div className="my-3 p-4 rounded-2xl bg-white border border-[#D4AF37]/50 shadow-sm inline-block w-full">
               <p className="font-serif text-xl sm:text-2xl font-extrabold text-[#B8860B]">
-                {salutationParam} {guestNameParam || 'Quý Khách & Gia Đình'}
+                {salutationParam} {guestNameParam || (language === 'en' ? 'Distinguished Guest & Family' : 'Quý Khách & Gia Đình')}
               </p>
               {plusOneParam && (
                 <p className="font-serif italic text-xs text-stone-600 mt-1">
@@ -587,39 +592,41 @@ function InvitationContent() {
             </div>
 
             <p className="text-xs sm:text-sm text-stone-600 leading-relaxed max-w-sm mx-auto italic font-serif">
-              Đến chung vui cùng gia đình chúng mình trong ngày trọng đại và thiêng liêng nhất của cuộc đời!
+              {language === 'en'
+                ? 'Together with our families, we joyfully invite you to celebrate our union in marriage!'
+                : 'Đến chung vui cùng gia đình chúng mình trong ngày trọng đại và thiêng liêng nhất của cuộc đời!'}
             </p>
           </div>
 
           {/* Countdown Clock */}
           <div className="py-6 px-6 border-b border-[#E8DFC8] bg-white text-center">
             <span className="text-[10px] uppercase tracking-[0.2em] font-cinzel text-stone-500 font-semibold block mb-3">
-              Đếm ngược ngày cưới
+              {t.invitation.countdownTitle}
             </span>
             <div className="grid grid-cols-4 gap-2 max-w-xs mx-auto">
               <div className="p-2.5 rounded-2xl bg-[#FAF8F5] border border-[#E8DFC8] shadow-xs">
                 <span className="font-mono text-xl sm:text-2xl font-bold text-[#B8860B] block">
                   {timeLeft.days}
                 </span>
-                <span className="text-[9px] text-stone-500 uppercase font-semibold">Ngày</span>
+                <span className="text-[9px] text-stone-500 uppercase font-semibold">{t.invitation.days}</span>
               </div>
               <div className="p-2.5 rounded-2xl bg-[#FAF8F5] border border-[#E8DFC8] shadow-xs">
                 <span className="font-mono text-xl sm:text-2xl font-bold text-[#B8860B] block">
                   {timeLeft.hours}
                 </span>
-                <span className="text-[9px] text-stone-500 uppercase font-semibold">Giờ</span>
+                <span className="text-[9px] text-stone-500 uppercase font-semibold">{t.invitation.hours}</span>
               </div>
               <div className="p-2.5 rounded-2xl bg-[#FAF8F5] border border-[#E8DFC8] shadow-xs">
                 <span className="font-mono text-xl sm:text-2xl font-bold text-[#B8860B] block">
                   {timeLeft.minutes}
                 </span>
-                <span className="text-[9px] text-stone-500 uppercase font-semibold">Phút</span>
+                <span className="text-[9px] text-stone-500 uppercase font-semibold">{t.invitation.minutes}</span>
               </div>
               <div className="p-2.5 rounded-2xl bg-[#FAF8F5] border border-[#E8DFC8] shadow-xs">
                 <span className="font-mono text-xl sm:text-2xl font-bold text-[#B8860B] block">
                   {timeLeft.seconds}
                 </span>
-                <span className="text-[9px] text-stone-500 uppercase font-semibold">Giây</span>
+                <span className="text-[9px] text-stone-500 uppercase font-semibold">{t.invitation.seconds}</span>
               </div>
             </div>
           </div>
@@ -627,39 +634,39 @@ function InvitationContent() {
           {/* Wedding Event Timeline */}
           <div className="py-8 px-6 border-b border-[#E8DFC8] bg-[#FAF8F5]">
             <h4 className="font-serif text-lg font-bold text-stone-900 text-center mb-6">
-              Lịch Trình Tiệc Cưới
+              {t.invitation.timelineTitle}
             </h4>
 
             <div className="space-y-3.5 max-w-sm mx-auto text-xs">
               <div className="flex items-start gap-3">
-                <span className="font-mono font-bold text-sm text-[#B8860B] w-12 flex-shrink-0 pt-0.5">17:30</span>
+                <span className="font-mono font-bold text-sm text-[#B8860B] w-12 flex-shrink-0 pt-0.5">{t.invitation.time1Time}</span>
                 <div className="p-3 rounded-2xl bg-white border border-stone-200/80 flex-1 shadow-xs">
-                  <span className="font-bold block text-stone-900">Đón Khách & Chụp Ảnh</span>
-                  <span className="text-[11px] text-stone-500">Chụp hình lưu niệm tại sảnh hoa cùng cô dâu & chú rể</span>
+                  <span className="font-bold block text-stone-900">{t.invitation.time1Title}</span>
+                  <span className="text-[11px] text-stone-500">{t.invitation.time1Desc}</span>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <span className="font-mono font-bold text-sm text-[#B8860B] w-12 flex-shrink-0 pt-0.5">18:00</span>
+                <span className="font-mono font-bold text-sm text-[#B8860B] w-12 flex-shrink-0 pt-0.5">{t.invitation.time2Time}</span>
                 <div className="p-3 rounded-2xl bg-white border border-stone-200/80 flex-1 shadow-xs">
-                  <span className="font-bold block text-stone-900">Nghi Thức Lễ Thành Hôn</span>
-                  <span className="text-[11px] text-stone-500">Trao nhẫn cưới & rót rượu champagne mừng hạnh phúc</span>
+                  <span className="font-bold block text-stone-900">{t.invitation.time2Title}</span>
+                  <span className="text-[11px] text-stone-500">{t.invitation.time2Desc}</span>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <span className="font-mono font-bold text-sm text-[#B8860B] w-12 flex-shrink-0 pt-0.5">18:30</span>
+                <span className="font-mono font-bold text-sm text-[#B8860B] w-12 flex-shrink-0 pt-0.5">{t.invitation.time3Time}</span>
                 <div className="p-3 rounded-2xl bg-white border border-stone-200/80 flex-1 shadow-xs">
-                  <span className="font-bold block text-stone-900">Khai Tiệc Mừng Cưới</span>
-                  <span className="text-[11px] text-stone-500">Thưởng thức ẩm thực tiệc cưới và nâng ly cùng bạn bè</span>
+                  <span className="font-bold block text-stone-900">{t.invitation.time3Title}</span>
+                  <span className="text-[11px] text-stone-500">{t.invitation.time3Desc}</span>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <span className="font-mono font-bold text-sm text-[#B8860B] w-12 flex-shrink-0 pt-0.5">19:30</span>
+                <span className="font-mono font-bold text-sm text-[#B8860B] w-12 flex-shrink-0 pt-0.5">{t.invitation.time4Time}</span>
                 <div className="p-3 rounded-2xl bg-amber-50 border border-amber-300/80 flex-1 shadow-xs">
-                  <span className="font-bold block text-amber-900">Chiếu Ảnh Khách Lên Màn LED</span>
-                  <span className="text-[11px] text-amber-800">Quét mã QR chụp ảnh & gửi lời chúc trực tiếp lên sân khấu!</span>
+                  <span className="font-bold block text-amber-900">{t.invitation.time4Title}</span>
+                  <span className="text-[11px] text-amber-800">{t.invitation.time4Desc}</span>
                 </div>
               </div>
             </div>
@@ -669,26 +676,26 @@ function InvitationContent() {
           <div className="py-8 px-6 border-b border-[#E8DFC8] bg-white text-center">
             <MapPin className="w-6 h-6 text-[#B8860B] mx-auto mb-2" />
             <span className="text-[10px] uppercase tracking-[0.2em] font-cinzel text-stone-500 font-semibold block">
-              Địa Điểm Tổ Chức
+              {t.invitation.venueTitle}
             </span>
             <h4 className="font-serif text-xl font-bold text-stone-900 mt-1">
-              Trung Tâm Hội Nghị GEM Center
+              {t.invitation.venueName}
             </h4>
             <p className="text-xs font-semibold text-stone-700 mt-0.5">
-              Sảnh Grand Ballroom • Lầu 3
+              {t.invitation.venueHall}
             </p>
             <p className="text-xs text-stone-500 mt-0.5 max-w-xs mx-auto">
-              08 Nguyễn Bỉnh Khiêm, Phường Đa Kao, Quận 1, TP. Hồ Chí Minh
+              {t.invitation.venueAddress}
             </p>
 
             <div className="mt-4">
               <a
-                href="https://maps.google.com/?q=GEM+Center+08+Nguyen+Binh+Khiem"
+                href={language === 'en' ? 'https://maps.google.com/?q=The+Glasshouse+New+York' : 'https://maps.google.com/?q=GEM+Center+08+Nguyen+Binh+Khiem'}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-stone-900 text-white text-xs font-semibold shadow-sm hover:bg-stone-800 transition-colors"
               >
-                <span>Mở Bản Đồ Chỉ Đường (Google Maps)</span>
+                <span>{t.invitation.btnGoogleMaps}</span>
                 <ExternalLink className="w-3.5 h-3.5 text-amber-300" />
               </a>
             </div>
@@ -698,13 +705,13 @@ function InvitationContent() {
           <div className="py-8 px-6 border-b border-[#E8DFC8] bg-[#FAF8F5]">
             <div className="text-center mb-5">
               <span className="text-[10px] uppercase tracking-[0.2em] font-cinzel text-[#B8860B] font-bold block">
-                Phản Hồi Tham Dự
+                {t.invitation.rsvpTitle}
               </span>
               <h4 className="font-serif text-xl font-bold text-stone-900 mt-0.5">
-                Xác Nhận Tham Dự (RSVP)
+                {t.invitation.rsvpSubtitle}
               </h4>
               <p className="text-xs text-stone-500 mt-1">
-                Để dâu rể chuẩn bị chỗ ngồi và bàn tiệc chu đáo nhất
+                {language === 'en' ? 'Kindly RSVP by October 1st to help us plan comfortably' : 'Để dâu rể chuẩn bị chỗ ngồi và bàn tiệc chu đáo nhất'}
               </p>
             </div>
 
@@ -712,28 +719,28 @@ function InvitationContent() {
               <div className="p-5 rounded-2xl bg-emerald-50 border border-emerald-200 text-center animate-fade-in shadow-xs">
                 <CheckCircle2 className="w-10 h-10 text-emerald-600 mx-auto mb-2" />
                 <h5 className="font-serif font-bold text-emerald-900 text-base">
-                  Cảm ơn {rsvpGuestName}!
+                  {t.invitation.rsvpSuccessTitle} {rsvpGuestName}!
                 </h5>
                 <p className="text-xs text-emerald-700 mt-1">
-                  Dâu rể đã nhận được xác nhận của bạn và rất háo hức chờ đón bạn trong ngày vui!
+                  {t.invitation.rsvpSuccessDesc}
                 </p>
               </div>
             ) : (
               <form onSubmit={handleRsvpSubmit} className="space-y-3.5 max-w-sm mx-auto text-xs">
                 <div>
-                  <label className="block text-stone-700 font-semibold mb-1">Tên của bạn:</label>
+                  <label className="block text-stone-700 font-semibold mb-1">{t.invitation.rsvpNameLabel}</label>
                   <input
                     type="text"
                     required
                     value={rsvpGuestName}
                     onChange={(e) => setRsvpGuestName(e.target.value)}
-                    placeholder="VD: Anh Tuấn FPT"
+                    placeholder={language === 'en' ? 'e.g. John Smith' : 'VD: Anh Tuấn FPT'}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs outline-none focus:border-[#D4AF37] bg-white shadow-xs"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-stone-700 font-semibold mb-1">Bạn sẽ tham dự chứ?</label>
+                  <label className="block text-stone-700 font-semibold mb-1">{t.invitation.rsvpAttendingLabel}</label>
                   <div className="grid grid-cols-3 gap-1.5">
                     <button
                       type="button"
@@ -744,7 +751,7 @@ function InvitationContent() {
                           : 'bg-white text-stone-700 border-stone-200'
                       }`}
                     >
-                      Đi 1 người
+                      {t.invitation.rsvpOption1}
                     </button>
                     <button
                       type="button"
@@ -755,7 +762,7 @@ function InvitationContent() {
                           : 'bg-white text-stone-700 border-stone-200'
                       }`}
                     >
-                      Đi 2 người
+                      {t.invitation.rsvpOption2}
                     </button>
                     <button
                       type="button"
@@ -766,14 +773,14 @@ function InvitationContent() {
                           : 'bg-white text-stone-700 border-stone-200'
                       }`}
                     >
-                      Rất tiếc vắng mặt
+                      {t.invitation.rsvpOptionNo}
                     </button>
                   </div>
                 </div>
 
                 {rsvpAttending !== 'no' && (
                   <div>
-                    <label className="block text-stone-700 font-semibold mb-1">Khẩu vị ăn uống:</label>
+                    <label className="block text-stone-700 font-semibold mb-1">{t.invitation.rsvpDietLabel}</label>
                     <div className="flex gap-2">
                       <label className="flex items-center gap-1.5 cursor-pointer">
                         <input
@@ -783,7 +790,7 @@ function InvitationContent() {
                           onChange={() => setRsvpDiet('regular')}
                           className="text-[#D4AF37]"
                         />
-                        <span>Ăn mặn (Thực đơn tiệc)</span>
+                        <span>{t.invitation.rsvpDietRegular}</span>
                       </label>
                       <label className="flex items-center gap-1.5 cursor-pointer ml-3">
                         <input
@@ -793,19 +800,19 @@ function InvitationContent() {
                           onChange={() => setRsvpDiet('vegetarian')}
                           className="text-[#D4AF37]"
                         />
-                        <span>Ăn chay</span>
+                        <span>{t.invitation.rsvpDietVeg}</span>
                       </label>
                     </div>
                   </div>
                 )}
 
                 <div>
-                  <label className="block text-stone-700 font-semibold mb-1">Lời nhắn gửi dâu rể (tùy chọn):</label>
+                  <label className="block text-stone-700 font-semibold mb-1">{t.invitation.rsvpWishLabel}</label>
                   <textarea
                     rows={2}
                     value={rsvpWish}
                     onChange={(e) => setRsvpWish(e.target.value)}
-                    placeholder="Chúc hai bạn mãi luôn hạnh phúc bên nhau nhé..."
+                    placeholder={language === 'en' ? 'Send a warm wish to the bride and groom...' : 'Chúc hai bạn mãi luôn hạnh phúc bên nhau nhé...'}
                     className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-xs outline-none focus:border-[#D4AF37] bg-white shadow-xs"
                   />
                 </div>
@@ -814,7 +821,7 @@ function InvitationContent() {
                   type="submit"
                   className="w-full py-3 rounded-xl bg-stone-900 text-white font-bold text-xs hover:bg-stone-800 transition-colors shadow-md"
                 >
-                  Xác Nhận Tham Dự
+                  {t.invitation.rsvpSubmitBtn}
                 </button>
               </form>
             )}
@@ -823,13 +830,13 @@ function InvitationContent() {
           {/* WeddingLive Stage Feature Integration */}
           <div className="py-8 px-6 border-b border-[#E8DFC8] bg-gradient-to-br from-amber-50/70 to-rose-50/50 text-center">
             <span className="text-[10px] uppercase font-bold tracking-widest text-[#B8860B] block mb-1">
-              Trải Nghiệm Tại Bàn Tiệc
+              {t.invitation.stageFeatureSubtitle}
             </span>
             <h4 className="font-serif text-xl font-bold text-stone-900">
-              Chiếu Ảnh Của Bạn Lên Màn LED
+              {t.invitation.stageFeatureTitle}
             </h4>
             <p className="text-xs text-stone-600 mt-1 max-w-xs mx-auto">
-              Tại tiệc cưới, bạn có thể chụp ảnh và gửi trực tiếp để ảnh xuất hiện trên màn hình LED lớn sân khấu!
+              {t.invitation.stageFeatureDesc}
             </p>
 
             <div className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-2">
@@ -838,21 +845,21 @@ function InvitationContent() {
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-[#D4AF37] to-[#B8860B] text-stone-950 font-bold text-xs shadow-md hover:brightness-105 transition-all"
               >
                 <Camera className="w-4 h-4" />
-                <span>Thử Chụp &amp; Gửi Ảnh Ngay</span>
+                <span>{t.invitation.btnTryLiveStage}</span>
               </Link>
             </div>
           </div>
 
-          {/* VietQR Digital Gift Envelope */}
+          {/* Wedding Gift & Registry Modal Trigger */}
           <div className="py-8 px-6 text-center bg-white">
             <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto mb-2 shadow-xs">
               <Gift className="w-6 h-6" />
             </div>
             <h4 className="font-serif text-lg font-bold text-stone-900">
-              Gửi Quà Mừng Cưới (VietQR)
+              {t.invitation.giftTitle}
             </h4>
             <p className="text-xs text-stone-500 mt-1 max-w-xs mx-auto">
-              Dành cho bạn bè, người thân ở xa hoặc không tiện mang phong bì tiền mặt
+              {t.invitation.giftDesc}
             </p>
 
             <div className="mt-4 flex flex-col items-center gap-2">
@@ -862,7 +869,7 @@ function InvitationContent() {
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-[#D4AF37] text-stone-900 text-xs font-bold shadow-xs hover:bg-amber-50/50 transition-colors"
               >
                 <Gift className="w-4 h-4 text-rose-500" />
-                <span>Mở Mã VietQR Chuyển Khoản</span>
+                <span>{t.invitation.btnOpenGiftModal}</span>
               </button>
 
               <button
@@ -871,7 +878,7 @@ function InvitationContent() {
                 className="inline-flex items-center gap-1.5 text-[11px] text-stone-500 hover:text-stone-800 transition-colors mt-2"
               >
                 <Share2 className="w-3.5 h-3.5" />
-                <span>{copiedLink ? 'Đã sao chép link thiệp!' : 'Sao chép link thiệp này'}</span>
+                <span>{copiedLink ? t.invitation.linkCopied : t.invitation.btnCopyInviteLink}</span>
               </button>
             </div>
           </div>
@@ -879,7 +886,7 @@ function InvitationContent() {
           {/* Footer Note */}
           <div className="py-6 border-t border-[#E8DFC8] text-center text-xs text-stone-400 bg-[#FAF8F5]">
             <p className="italic font-serif">
-              Minh Anh &amp; Tuấn Kiệt trân trọng cảm ơn tình cảm của bạn! ❤️
+              {t.invitation.footerThanks}
             </p>
           </div>
         </div>

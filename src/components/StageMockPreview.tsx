@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Sparkles, QrCode, Heart, Send, RefreshCw, Volume2 } from 'lucide-react';
 import { triggerWeddingConfetti } from '@/lib/confetti';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface MockPhoto {
   guest: string;
@@ -11,10 +12,31 @@ interface MockPhoto {
   time: string;
 }
 
-const DEMO_PHOTOS: MockPhoto[] = [
+const DEMO_PHOTOS_EN: MockPhoto[] = [
   {
-    guest: 'Hội Bạn Đại Học',
-    wish: 'Chúc Minh Anh & Tuấn Kiệt trăm năm hạnh phúc, sớm đón quý tử nha! 🎉🥂',
+    guest: 'College Friends & Alumni',
+    wish: 'Congratulations Minh Anh & Tuấn Kiệt! Wishing you both a lifetime of love and joy! 🥂✨',
+    img: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80',
+    time: 'Just now',
+  },
+  {
+    guest: 'Uncle David & Family',
+    wish: 'May your shared path always be blessed with laughter, health, and prosperity! ❤️',
+    img: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1200&q=80',
+    time: '1 min ago',
+  },
+  {
+    guest: 'Bridesmaids & Emma',
+    wish: 'The most stunning bride ever! So happy for you two lovers! 💐💍',
+    img: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=1200&q=80',
+    time: '2 mins ago',
+  },
+];
+
+const DEMO_PHOTOS_VI: MockPhoto[] = [
+  {
+    guest: 'Hội Bạn Đại Học Bách Khoa',
+    wish: 'Chúc Minh Anh & Tuấn Kiệt trăm năm hạnh phúc, sớm đón thiên thần nhỏ nha! 🎉🥂',
     img: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80',
     time: 'Vừa xong',
   },
@@ -33,10 +55,16 @@ const DEMO_PHOTOS: MockPhoto[] = [
 ];
 
 export function StageMockPreview() {
-  const [photos, setPhotos] = useState<MockPhoto[]>(DEMO_PHOTOS);
+  const { lang } = useLanguage();
+  const demoList = lang === 'en' ? DEMO_PHOTOS_EN : DEMO_PHOTOS_VI;
+  const [photos, setPhotos] = useState<MockPhoto[]>(demoList);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isInterrupting, setIsInterrupting] = useState(false);
   const [isSendingMock, setIsSendingMock] = useState(false);
+
+  useEffect(() => {
+    setPhotos(demoList);
+  }, [lang]);
 
   // Auto-advance slideshow every 5 seconds
   useEffect(() => {
@@ -54,10 +82,13 @@ export function StageMockPreview() {
 
     setTimeout(() => {
       const newMock: MockPhoto = {
-        guest: 'Bàn số 8 - Team Đồng Nghiệp',
-        wish: 'Cả team chúc 2 sếp trăm năm hòa hợp, KPI năm nay là có em bé nha! 🚀🎉🍾',
+        guest: lang === 'en' ? 'Table 8 - Tech Co-workers' : 'Bàn số 8 - Team Đồng Nghiệp',
+        wish:
+          lang === 'en'
+            ? 'Cheers to the best couple! Wishing you endless adventures together! 🚀🎉🍾'
+            : 'Cả team chúc 2 bạn trăm năm hòa hợp, viên mãn hạnh phúc nha! 🚀🎉🍾',
         img: 'https://images.unsplash.com/photo-1519225429980-715cb0215aed?auto=format&fit=crop&w=1200&q=80',
-        time: 'Vừa xong',
+        time: lang === 'en' ? 'Just now' : 'Vừa xong',
       };
 
       setPhotos((prev) => [newMock, ...prev]);
@@ -83,10 +114,16 @@ export function StageMockPreview() {
         <div className="flex items-center justify-between px-3 py-2 text-xs text-stone-400 border-b border-stone-800/80 mb-2">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
-            <span className="font-mono text-stone-300 tracking-wider">LIVE STAGE 16:9 • MÀN HÌNH LED SÂN KHẤU</span>
+            <span className="font-mono text-stone-300 tracking-wider">
+              {lang === 'en'
+                ? 'LIVE STAGE 16:9 • BIG SCREEN BANQUET WALL'
+                : 'LIVE STAGE 16:9 • MÀN HÌNH LED SÂN KHẤU'}
+            </span>
           </div>
           <div className="flex items-center gap-3 text-[11px]">
-            <span className="text-amber-400 font-medium">Tự động chuyển mỗi 5s</span>
+            <span className="text-amber-400 font-medium">
+              {lang === 'en' ? 'Auto-slides every 5s' : 'Tự động chuyển mỗi 5s'}
+            </span>
             <div className="flex items-center gap-1 bg-stone-800 px-2 py-0.5 rounded text-stone-300">
               <Volume2 className="w-3 h-3 text-emerald-400" />
               <span>Real-time Sync</span>
@@ -120,7 +157,9 @@ export function StageMockPreview() {
               <div className="bg-gradient-to-r from-amber-500 via-rose-500 to-amber-500 text-white px-5 py-2 rounded-full shadow-2xl flex items-center gap-2 border border-white/40">
                 <Sparkles className="w-4 h-4 text-yellow-200 animate-spin" />
                 <span className="font-bold text-xs sm:text-sm tracking-wide">
-                  🎉 Khoảnh khắc mới vừa được gửi lên sân khấu!
+                  {lang === 'en'
+                    ? '🎉 New moment just streamed to the stage screen!'
+                    : '🎉 Khoảnh khắc mới vừa được gửi lên sân khấu!'}
                 </span>
               </div>
             </div>
@@ -143,10 +182,10 @@ export function StageMockPreview() {
             </div>
             <div className="text-left leading-tight">
               <span className="text-[10px] sm:text-xs font-bold text-stone-900 block font-serif">
-                Quét mã để gửi ảnh
+                {lang === 'en' ? 'Scan to share photo' : 'Quét mã để gửi ảnh'}
               </span>
               <span className="text-[9px] text-stone-500 block mt-0.5">
-                Lên màn hình LED tiệc cưới
+                {lang === 'en' ? 'Streams live to stage LED' : 'Lên màn hình LED tiệc cưới'}
               </span>
             </div>
           </div>
@@ -171,7 +210,11 @@ export function StageMockPreview() {
         <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3 px-2">
           <div className="text-xs text-stone-400 flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-amber-400" />
-            <span>Đang chiếu {currentIndex + 1} / {photos.length} khoảnh khắc</span>
+            <span>
+              {lang === 'en'
+                ? `Streaming ${currentIndex + 1} of ${photos.length} moments`
+                : `Đang chiếu ${currentIndex + 1} / ${photos.length} khoảnh khắc`}
+            </span>
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -180,7 +223,7 @@ export function StageMockPreview() {
               className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs transition-colors"
             >
               <RefreshCw className="w-3.5 h-3.5" />
-              <span>Đổi ảnh tiếp theo</span>
+              <span>{lang === 'en' ? 'Next Slide' : 'Đổi ảnh tiếp theo'}</span>
             </button>
 
             <button
@@ -189,7 +232,15 @@ export function StageMockPreview() {
               className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#D4AF37] to-[#F59E0B] text-stone-950 font-semibold text-xs shadow-lg hover:brightness-110 active:scale-95 transition-all"
             >
               <Send className="w-3.5 h-3.5" />
-              <span>{isSendingMock ? 'Đang gửi...' : '⚡ Bấm thử gửi ảnh lên sân khấu'}</span>
+              <span>
+                {isSendingMock
+                  ? lang === 'en'
+                    ? 'Streaming...'
+                    : 'Đang gửi...'
+                  : lang === 'en'
+                  ? '⚡ Try Live Photo Stream'
+                  : '⚡ Bấm thử gửi ảnh lên sân khấu'}
+              </span>
             </button>
           </div>
         </div>

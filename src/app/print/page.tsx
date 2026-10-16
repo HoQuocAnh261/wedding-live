@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { PrintCardPreview, CardData, CardTheme, CardType } from '@/components/PrintCardPreview';
 import { WeddingGuest, GuestSortField } from '@/types/guest';
+import { useLanguage } from '@/context/LanguageContext';
 import {
   SAMPLE_WEDDING_GUESTS,
   parseGuestExcel,
@@ -37,21 +38,22 @@ import {
 } from '@/lib/excel-guest';
 
 export default function PrintPage() {
+  const { t, language } = useLanguage();
   const [originUrl, setOriginUrl] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Card general settings
   const [cardType, setCardType] = useState<CardType>('envelope');
   const [theme, setTheme] = useState<CardTheme>('gold');
-  const [groomName, setGroomName] = useState('Tuấn Kiệt');
-  const [brideName, setBrideName] = useState('Minh Anh');
-  const [weddingDate, setWeddingDate] = useState('26.10.2026');
-  const [weddingTime, setWeddingTime] = useState('18:00 (Khai tiệc 18:30)');
-  const [venueName, setVenueName] = useState('Trung Tâm Hội Nghị GEM Center');
-  const [hallName, setHallName] = useState('Sảnh Grand Ballroom - Lầu 3');
-  const [venueAddress, setVenueAddress] = useState('08 Nguyễn Bỉnh Khiêm, Đa Kao, Quận 1, TP. HCM');
-  const [tableNumber, setTableNumber] = useState('BÀN SỐ 08');
-  const [customNote, setCustomNote] = useState('Quét mã để chụp ảnh selfie & chúc phúc trực tiếp lên màn hình LED sân khấu!');
+  const [groomName, setGroomName] = useState(language === 'en' ? 'Michael' : 'Tuấn Kiệt');
+  const [brideName, setBrideName] = useState(language === 'en' ? 'Sarah' : 'Minh Anh');
+  const [weddingDate, setWeddingDate] = useState(language === 'en' ? 'October 26, 2026' : '26.10.2026');
+  const [weddingTime, setWeddingTime] = useState(language === 'en' ? '6:00 PM (Reception 6:30 PM)' : '18:00 (Khai tiệc 18:30)');
+  const [venueName, setVenueName] = useState(language === 'en' ? 'The Glasshouse Estate' : 'Trung Tâm Hội Nghị GEM Center');
+  const [hallName, setHallName] = useState(language === 'en' ? 'Grand Ballroom - 3rd Floor' : 'Sảnh Grand Ballroom - Lầu 3');
+  const [venueAddress, setVenueAddress] = useState(language === 'en' ? '550 W 48th St, New York, NY 10036' : '08 Nguyễn Bỉnh Khiêm, Đa Kao, Quận 1, TP. HCM');
+  const [tableNumber, setTableNumber] = useState(language === 'en' ? 'TABLE NO. 08' : 'BÀN SỐ 08');
+  const [customNote, setCustomNote] = useState(language === 'en' ? 'Scan QR code to upload photos & send warm wishes directly to the live stage!' : 'Quét mã để chụp ảnh selfie & chúc phúc trực tiếp lên màn hình LED sân khấu!');
   
   // Toggles
   const [showQRUpload, setShowQRUpload] = useState(true);
@@ -285,10 +287,10 @@ export default function PrintPage() {
             <div>
               <div className="flex items-center gap-2 text-xs font-semibold text-[#B8860B] uppercase tracking-wider mb-0.5">
                 <Printer className="w-3.5 h-3.5" />
-                <span>In Ấn Không Cần Viết Tay • Nhập Excel Chuẩn</span>
+                <span>{t.print.pageSubtitle}</span>
               </div>
               <h1 className="font-serif text-xl sm:text-2xl font-bold text-stone-900">
-                Tạo Thiệp Cưới & Bảng QR Bàn Tiệc
+                {t.print.pageTitle}
               </h1>
             </div>
           </div>
@@ -301,7 +303,7 @@ export default function PrintPage() {
               className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-rose-50 text-rose-800 border border-rose-200 font-semibold text-xs hover:bg-rose-100 transition-colors"
             >
               <Sparkles className="w-3.5 h-3.5 text-rose-600" />
-              <span>Xem Thiệp Online (Mobile)</span>
+              <span>{t.print.btnViewOnline}</span>
             </Link>
 
             <button
@@ -312,8 +314,10 @@ export default function PrintPage() {
               <Printer className="w-4 h-4" />
               <span>
                 {isBatchMode
-                  ? `In Hàng Loạt (${selectedGuestsForPrint.length} Thiệp / Bao Thư)`
-                  : 'In Bản Này Ngay (Print)'}
+                  ? (language === 'en'
+                      ? `Print Batch (${selectedGuestsForPrint.length} Items)`
+                      : `In Hàng Loạt (${selectedGuestsForPrint.length} Thiệp / Bao Thư)`)
+                  : (language === 'en' ? 'Print This Preview' : 'In Bản Này Ngay (Print)')}
               </span>
             </button>
           </div>
@@ -331,7 +335,7 @@ export default function PrintPage() {
             <div>
               <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2 flex items-center gap-1.5">
                 <Layout className="w-4 h-4 text-[#B8860B]" />
-                <span>1. Chọn loại ấn phẩm in</span>
+                <span>{t.print.step1SelectType}</span>
               </label>
               <div className="grid grid-cols-3 gap-2">
                 <button
@@ -343,9 +347,9 @@ export default function PrintPage() {
                       : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100'
                   }`}
                 >
-                  ✉️ In Bao Thư (Phong Bì)
+                  ✉️ {t.print.typeEnvelope}
                   <span className="block text-[10px] font-normal opacity-90 mt-0.5">
-                    Có tên khách & cơ quan
+                    {t.print.typeEnvelopeSub}
                   </span>
                 </button>
 
@@ -358,9 +362,9 @@ export default function PrintPage() {
                       : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100'
                   }`}
                 >
-                  📜 In Ruột Thiệp Mời
+                  📜 {t.print.typeInvitation}
                   <span className="block text-[10px] font-normal opacity-90 mt-0.5">
-                    Khổ A5 / A6 chuẩn
+                    {t.print.typeInvitationSub}
                   </span>
                 </button>
 
@@ -373,9 +377,9 @@ export default function PrintPage() {
                       : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100'
                   }`}
                 >
-                  🍽️ Bảng QR Bàn Tiệc
+                  🍽️ {t.print.typeTableStand}
                   <span className="block text-[10px] font-normal opacity-90 mt-0.5">
-                    Mica A6 đứng
+                    {t.print.typeTableStandSub}
                   </span>
                 </button>
               </div>
@@ -385,7 +389,7 @@ export default function PrintPage() {
             <div>
               <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2 flex items-center gap-1.5">
                 <Palette className="w-4 h-4 text-[#B8860B]" />
-                <span>2. Chọn phong cách màu sắc</span>
+                <span>{t.print.step2SelectTheme}</span>
               </label>
               <div className="flex flex-wrap gap-2">
                 {themesList.map((item) => (
@@ -413,10 +417,10 @@ export default function PrintPage() {
               <div>
                 <h3 className="font-serif text-lg font-bold text-stone-900 flex items-center gap-2">
                   <FileSpreadsheet className="w-5 h-5 text-emerald-600" />
-                  <span>Danh Sách Khách Mời In Thiệp ({guests.length} khách)</span>
+                  <span>{t.print.guestListTitle} ({guests.length} {language === 'en' ? 'guests' : 'khách'})</span>
                 </h3>
                 <p className="text-xs text-stone-500">
-                  Tải file Excel lên để hệ thống tự điền tên từng người, không cần viết tay mỏi mệt
+                  {t.print.guestListSubtitle}
                 </p>
               </div>
 
@@ -437,17 +441,17 @@ export default function PrintPage() {
                   className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 text-white font-semibold text-xs hover:bg-emerald-700 transition-colors shadow-xs"
                 >
                   <Upload className="w-3.5 h-3.5" />
-                  <span>{isImporting ? 'Đang đọc...' : 'Tải File Excel (.xlsx)'}</span>
+                  <span>{isImporting ? t.print.btnUploading : t.print.btnUploadExcel}</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={downloadSampleGuestExcel}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-300 text-stone-700 font-medium text-xs hover:bg-stone-50 transition-colors"
-                  title="Tải file mẫu về máy để điền"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-stone-300 text-stone-700 font-medium text-xs hover:bg-stone-50 transition-colors"
+                  title={language === 'en' ? 'Download sample template to edit' : 'Tải file mẫu về máy để điền'}
                 >
                   <Download className="w-3.5 h-3.5" />
-                  <span>Tải File Mẫu</span>
+                  <span>{t.print.btnDownloadTemplate}</span>
                 </button>
               </div>
             </div>
@@ -459,18 +463,18 @@ export default function PrintPage() {
               <div>
                 <label className="text-[11px] font-bold text-stone-700 block mb-1 flex items-center gap-1">
                   <ArrowUpDown className="w-3 h-3 text-[#B8860B]" />
-                  <span>Sắp xếp in theo:</span>
+                  <span>{t.print.sortBy}:</span>
                 </label>
                 <select
                   value={sortField}
                   onChange={(e) => setSortField(e.target.value as GuestSortField)}
                   className="w-full px-2.5 py-1.5 rounded-lg border border-stone-300 bg-white font-semibold text-stone-800 outline-none"
                 >
-                  <option value="company">🏢 Theo Công Ty / Nơi Làm Việc</option>
-                  <option value="address">📍 Theo Địa Chỉ / Tỉnh Thành</option>
-                  <option value="group">👥 Theo Mối Quan Hệ / Nhóm</option>
-                  <option value="tableNumber">🍽️ Theo Số Bàn Tiệc</option>
-                  <option value="name">🔤 Theo Tên Khách A-Z</option>
+                  <option value="company">{t.print.sortCompany}</option>
+                  <option value="address">{t.print.sortAddress}</option>
+                  <option value="group">{t.print.sortGroup}</option>
+                  <option value="tableNumber">{t.print.sortTable}</option>
+                  <option value="name">{t.print.sortName}</option>
                 </select>
               </div>
 
@@ -478,14 +482,14 @@ export default function PrintPage() {
               <div>
                 <label className="text-[11px] font-bold text-stone-700 block mb-1 flex items-center gap-1">
                   <Building className="w-3 h-3 text-[#B8860B]" />
-                  <span>Lọc theo Công Ty:</span>
+                  <span>{t.print.filterCompany}:</span>
                 </label>
                 <select
                   value={filterCompany}
                   onChange={(e) => setFilterCompany(e.target.value)}
                   className="w-full px-2.5 py-1.5 rounded-lg border border-stone-300 bg-white text-stone-800 outline-none"
                 >
-                  <option value="all">Tất cả công ty ({guests.length})</option>
+                  <option value="all">{t.print.filterAll} ({guests.length})</option>
                   {uniqueCompanies.map((c) => (
                     <option key={c} value={c}>
                       {c} ({guests.filter((g) => g.company === c).length})
@@ -498,14 +502,14 @@ export default function PrintPage() {
               <div>
                 <label className="text-[11px] font-bold text-stone-700 block mb-1 flex items-center gap-1">
                   <MapPin className="w-3 h-3 text-[#B8860B]" />
-                  <span>Lọc theo Khu Vực:</span>
+                  <span>{t.print.filterAddress}:</span>
                 </label>
                 <select
                   value={filterAddress}
                   onChange={(e) => setFilterAddress(e.target.value)}
                   className="w-full px-2.5 py-1.5 rounded-lg border border-stone-300 bg-white text-stone-800 outline-none"
                 >
-                  <option value="all">Tất cả địa chỉ</option>
+                  <option value="all">{t.print.filterAll}</option>
                   {uniqueAddresses.map((a) => (
                     <option key={a} value={a}>
                       {a} ({guests.filter((g) => g.address === a).length})
@@ -521,7 +525,7 @@ export default function PrintPage() {
                 <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  placeholder="Tìm theo tên, cơ quan, địa chỉ..."
+                  placeholder={t.print.searchPlaceholder}
                   value={searchGuest}
                   onChange={(e) => setSearchGuest(e.target.value)}
                   className="w-full pl-8 pr-3 py-1.5 rounded-xl border border-stone-200 text-xs outline-none bg-stone-50 focus:bg-white focus:border-[#D4AF37]"
@@ -534,17 +538,17 @@ export default function PrintPage() {
                   onClick={selectAllFiltered}
                   className="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium"
                 >
-                  Chọn tất cả
+                  {t.print.selectAll}
                 </button>
                 <button
                   type="button"
                   onClick={deselectAllFiltered}
                   className="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium"
                 >
-                  Bỏ chọn
+                  {t.print.unselectAll}
                 </button>
                 <span className="text-stone-500 font-semibold">
-                  Đã chọn: <span className="text-[#B8860B]">{selectedGuestsForPrint.length}</span> / {filteredGuests.length}
+                  {language === 'en' ? 'Selected:' : 'Đã chọn:'} <span className="text-[#B8860B]">{selectedGuestsForPrint.length}</span> / {filteredGuests.length}
                 </span>
               </div>
             </div>

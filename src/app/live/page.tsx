@@ -7,8 +7,10 @@ import { WeddingPhoto } from '@/types/wedding';
 import { getPhotos, supabase, isSupabaseConfigured, getDemoBroadcastChannel } from '@/lib/supabase';
 import { triggerStageCelebration } from '@/lib/confetti';
 import { INITIAL_WEDDING_PHOTOS } from '@/lib/mock-data';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function LiveStagePage() {
+  const { t, language } = useLanguage();
   const [photos, setPhotos] = useState<WeddingPhoto[]>(INITIAL_WEDDING_PHOTOS);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -22,8 +24,8 @@ export default function LiveStagePage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const slideTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const coupleNames = process.env.NEXT_PUBLIC_EVENT_NAME || 'Minh Anh & Tuấn Kiệt';
-  const weddingDate = process.env.NEXT_PUBLIC_EVENT_DATE || '26.10.2026';
+  const coupleNames = process.env.NEXT_PUBLIC_EVENT_NAME || (language === 'en' ? 'Sarah & Michael' : 'Minh Anh & Tuấn Kiệt');
+  const weddingDate = process.env.NEXT_PUBLIC_EVENT_DATE || (language === 'en' ? 'October 26, 2026' : '26.10.2026');
   const eventSlug = process.env.NEXT_PUBLIC_DEFAULT_EVENT_SLUG || 'dam-cuoi-minh-anh';
 
   // Load photos on mount
@@ -247,7 +249,7 @@ export default function LiveStagePage() {
         ) : (
           <div className="text-center text-stone-400">
             <RefreshCw className="w-10 h-10 animate-spin mx-auto mb-3 text-[#D4AF37]" />
-            <p className="font-serif text-xl text-white">Đang chuẩn bị trình chiếu ảnh cưới...</p>
+            <p className="font-serif text-xl text-white">{t.live.waitingTitle}</p>
           </div>
         )}
       </div>
@@ -263,7 +265,7 @@ export default function LiveStagePage() {
               {coupleNames}
             </h1>
             <p className="text-[11px] text-amber-200/90 font-serif italic">
-              Lễ Thành Hôn • {weddingDate}
+              {language === 'en' ? 'Wedding Celebration' : 'Lễ Thành Hôn'} • {weddingDate}
             </p>
           </div>
         </div>
@@ -272,7 +274,7 @@ export default function LiveStagePage() {
         <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 text-xs text-stone-200">
           <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
           <span className="font-bold tracking-widest text-white uppercase text-[11px]">
-            TRỰC TIẾP
+            {t.live.liveBadge}
           </span>
           <span className="text-stone-400 font-mono">
             {photos.length > 0 ? `(${currentIndex + 1}/${photos.length})` : ''}
@@ -286,7 +288,7 @@ export default function LiveStagePage() {
           <div className="bg-gradient-to-r from-amber-500 via-rose-500 to-amber-500 text-white px-8 py-3 rounded-full shadow-[0_10px_40px_rgba(245,158,11,0.6)] flex items-center gap-3 border-2 border-white/60">
             <Sparkles className="w-6 h-6 text-yellow-200 animate-spin" />
             <span className="font-serif text-lg sm:text-xl font-bold tracking-wide">
-              🎉 Khoảnh khắc mới từ {activePhoto?.guest_name}!
+              {language === 'en' ? `🎉 New moment from ${activePhoto?.guest_name}!` : `🎉 Khoảnh khắc mới từ ${activePhoto?.guest_name}!`}
             </span>
           </div>
         </div>
@@ -300,7 +302,7 @@ export default function LiveStagePage() {
               <span className="px-3 py-1 rounded-full bg-[#D4AF37] text-stone-950 font-bold text-xs sm:text-sm font-serif shadow-sm">
                 {activePhoto.guest_name}
               </span>
-              <span className="text-xs text-stone-400">gửi gắm chúc phúc</span>
+              <span className="text-xs text-stone-400">{t.live.sharedBy}</span>
             </div>
             
             {activePhoto.wish_message ? (
@@ -309,14 +311,14 @@ export default function LiveStagePage() {
               </p>
             ) : (
               <p className="text-xs text-stone-300 italic">
-                Chúc mừng hạnh phúc Minh Anh & Tuấn Kiệt! ❤️
+                {language === 'en' ? 'Warmest congratulations to the newly weds! ❤️' : 'Chúc mừng hạnh phúc Minh Anh & Tuấn Kiệt! ❤️'}
               </p>
             )}
           </div>
         </div>
       )}
 
-      {/* Persistent Bottom-Right QR Card: "Quét mã để chia sẻ khoảnh khắc!" */}
+      {/* Persistent Bottom-Right QR Card: "Scan to share photos!" */}
       <div className="absolute bottom-8 right-8 z-30 bg-white/95 backdrop-blur-xl p-3.5 sm:p-4 rounded-3xl shadow-2xl border-2 border-[#D4AF37] flex items-center gap-3.5 max-w-[240px] sm:max-w-[280px]">
         <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white p-1 rounded-2xl border border-stone-200 shadow-sm flex items-center justify-center flex-shrink-0">
           <QRCodeSVG
@@ -328,10 +330,10 @@ export default function LiveStagePage() {
         </div>
         <div className="text-left">
           <span className="block font-serif font-extrabold text-stone-900 text-xs sm:text-sm leading-snug">
-            Quét mã để chia sẻ khoảnh khắc!
+            {t.live.persistentQRTitle}
           </span>
           <span className="block text-[11px] text-[#B8860B] font-semibold mt-1">
-            Chiếu ngay lên LED
+            {t.live.persistentQRSubtitle}
           </span>
         </div>
       </div>
@@ -341,7 +343,7 @@ export default function LiveStagePage() {
         <button
           onClick={() => setIsPaused((prev) => !prev)}
           className="p-1.5 hover:bg-white/20 rounded-full transition-colors"
-          title={isPaused ? 'Tiếp tục trình chiếu (Space)' : 'Tạm dừng (Space)'}
+          title={isPaused ? (language === 'en' ? 'Resume (Space)' : 'Tiếp tục trình chiếu (Space)') : (language === 'en' ? 'Pause (Space)' : 'Tạm dừng (Space)')}
         >
           {isPaused ? <Play className="w-4 h-4 text-emerald-400" /> : <Pause className="w-4 h-4 text-amber-400" />}
         </button>
@@ -349,7 +351,7 @@ export default function LiveStagePage() {
         <button
           onClick={loadApprovedPhotos}
           className="p-1.5 hover:bg-white/20 rounded-full transition-colors"
-          title="Tải lại danh sách ảnh"
+          title={language === 'en' ? 'Reload photos' : 'Tải lại danh sách ảnh'}
         >
           <RefreshCw className="w-4 h-4" />
         </button>
@@ -357,13 +359,13 @@ export default function LiveStagePage() {
         <button
           onClick={toggleFullscreen}
           className="p-1.5 hover:bg-white/20 rounded-full transition-colors"
-          title="Toàn màn hình sân khấu (Phím F)"
+          title={language === 'en' ? 'Fullscreen (F)' : 'Toàn màn hình sân khấu (Phím F)'}
         >
           {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
         </button>
 
         <span className="text-[10px] text-stone-400 border-l border-white/20 pl-2">
-          Phím F: Fullscreen | Space: Dừng
+          {language === 'en' ? 'Press F: Fullscreen | Space: Pause' : 'Phím F: Fullscreen | Space: Dừng'}
         </span>
       </div>
     </div>

@@ -15,10 +15,20 @@ const jakarta = Plus_Jakarta_Sans({
   display: 'swap',
 });
 
+import { LanguageProvider } from '@/context/LanguageContext';
+
 export const metadata: Metadata = {
-  title: 'WeddingLive - Chiếu Ảnh Khách Mời Lên Màn LED Sân Khấu Tiệc Cưới',
-  description: 'Nền tảng chia sẻ ảnh cưới và trình chiếu trực tiếp lên màn hình LED phong cách Eventoly, tối ưu cho đám cưới Việt Nam.',
-  keywords: ['wedding tech', 'live wedding slideshow', 'man hinh led tiec cuoi', 'chia se anh cuoi', 'vietqr cuoi'],
+  title: 'WeddingLive - Live Banquet Photo Sharing & Big Screen Slideshow',
+  description:
+    'Turn your guests smartphones into a live digital camera. Photos stream directly to the banquet projector screen in real-time. Inspired by Eventoly & Kululu for modern weddings.',
+  keywords: [
+    'wedding tech',
+    'live wedding slideshow',
+    'reception photo sharing',
+    'wedding guest camera',
+    'big screen wedding slideshow',
+    'weddinglive',
+  ],
 };
 
 export default function RootLayout({
@@ -27,11 +37,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="vi" className={`${playfair.variable} ${jakarta.variable} h-full antialiased`}>
+    <html lang="en" className={`${playfair.variable} ${jakarta.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col font-sans bg-[#FAF8F5] text-stone-900">
-        <Navbar />
-        <main className="flex-1">{children}</main>
+        <LanguageProvider>
+          <Navbar />
+          <main className="flex-1">{children}</main>
+        </LanguageProvider>
       </body>
     </html>
   );
 }
+
